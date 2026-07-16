@@ -11,7 +11,7 @@ var CONFIG = (function () {
   // when viewing source).
   var _enc = {
     url: 'aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5bTJybEpSTVdmSVVyOGotUXhMT2hjWVJWN21maEFqUDR1ekFDLW4tQmVJWlVoX2JFUlFYMHVzR09CRzg1OFZFRWdpdy9leGVj',
-    key: 'Y0M3eEtwOXYyUm0yTjR3TDhqRjNoUTZ0WTFBYTVHMGU='
+    key: 'Y0M3eEtwOXZSMm1ONHdMOGpGM2hRNnRZMWJBNWRHMGU='
   };
 
   return {
