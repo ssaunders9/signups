@@ -312,30 +312,6 @@ body {
   min-height: 80px;
 }
 
-.restrict-row {
-  margin-bottom: 8px;
-}
-
-.checkbox-inline {
-  display: flex !important;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.95rem !important;
-  font-weight: 400 !important;
-  color: #2d2d2d !important;
-  cursor: pointer;
-  width: auto !important;
-  margin-bottom: 0 !important;
-}
-
-.checkbox-inline input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  cursor: pointer;
-  accent-color: #981e32;
-}
-
 .major-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
