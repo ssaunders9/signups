@@ -39,6 +39,7 @@ var api = (function () {
       eventStartTime: data.eventStartTime,
       eventEndTime: data.eventEndTime,
       location: data.location || '',
+      contact: data.contact || '',
       maxAttendance: data.maxAttendance,
       notes: data.notes || ''
     });
