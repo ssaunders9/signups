@@ -347,14 +347,11 @@ var app = (function () {
 
   function openAttendance(eventId, eventName) {
     // PIN gate — stored for the session so clubs only enter it once
-    var unlocked = sessionStorage.getItem('attendance_unlocked');
-    if (!unlocked) {
-      var pin = prompt('Enter the club attendance PIN to view signups:');
-      if (pin !== CONFIG.ATTENDANCE_PIN) {
-        alert('Incorrect PIN.');
-        return;
-      }
-      sessionStorage.setItem('attendance_unlocked', '1');
+    var pin = sessionStorage.getItem('attendance_pin');
+    if (!pin) {
+      pin = prompt('Enter the club attendance PIN to view signups:');
+      if (!pin) return;
+      sessionStorage.setItem('attendance_pin', pin);
     }
 
     dom.attendanceEventName.textContent = eventName;
@@ -369,7 +366,15 @@ var app = (function () {
       dom.attendanceMax.textContent = ev.maxAttendance;
     }
 
-    api.getSignups(eventId).then(function (data) {
+    api.getSignups(eventId, pin).then(function (data) {
+      // If PIN was wrong, clear it and let them retry
+      if (data.error && data.error === 'Incorrect PIN') {
+        sessionStorage.removeItem('attendance_pin');
+        dom.attendanceModal.style.display = 'none';
+        alert('Incorrect PIN.');
+        return;
+      }
+
       if (data.error) {
         dom.attendanceList.innerHTML = '<p class="error">Error: ' + escHtml(data.error) + '</p>';
         return;
