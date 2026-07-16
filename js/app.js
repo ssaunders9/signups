@@ -178,12 +178,12 @@ var app = (function () {
 
       var toggle = document.createElement('button');
       toggle.className = 'btn btn-secondary past-toggle';
-      toggle.textContent = '&#128336; Show ' + past.length + ' past event' + (past.length > 1 ? 's' : '');
+      toggle.textContent = '📂 Show ' + past.length + ' past event' + (past.length > 1 ? 's' : '');
       toggle.addEventListener('click', function () {
         var list = pastContainer.querySelector('.past-list');
         var hidden = list.style.display === 'none';
         list.style.display = hidden ? 'block' : 'none';
-        toggle.textContent = (hidden ? '&#128315; Hide' : '&#128336; Show') +
+        toggle.textContent = (hidden ? '📂 Hide' : '📂 Show') +
           ' ' + past.length + ' past event' + (past.length > 1 ? 's' : '');
       });
       pastContainer.appendChild(toggle);
