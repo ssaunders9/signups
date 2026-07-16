@@ -7,5 +7,6 @@
 
 var CONFIG = {
   API_BASE_URL: 'https://script.google.com/macros/s/AKfycbym2rlJRMWfIUr8j-QxLOhcYRV7mfhAjP4uzAC-n-BeIZUh_bERQX0usGOBG858VEEgiw/exec',
-  API_KEY: 'cC7xKp9vR2mN4wL8jF3hQ6tY1bA5dG0e'
+  API_KEY: 'cC7xKp9vR2mN4wL8jF3hQ6tY1bA5dG0e',
+  ATTENDANCE_PIN: '1010'  // 4-digit PIN clubs use to view attendance sheets
 };
