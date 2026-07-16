@@ -58,9 +58,9 @@
       </div>
 
       <!-- Student signup form (hidden until "Sign Up" is clicked) -->
-      <div id="signup-form" class="form-panel" style="display:none;">
+      <div id="signup-panel" class="form-panel" style="display:none;">
         <h3>Sign Up: <span id="signup-event-name"></span></h3>
-        <form>
+        <form id="signup-form">
           <input type="hidden" id="signup-event-id">
 
           <div class="form-group">
@@ -164,6 +164,12 @@
             <label for="event-location">Location</label>
             <input type="text" id="event-location" maxlength="200" required
                    placeholder="e.g. Dana 101, CUE 319, or Zoom">
+          </div>
+
+          <div class="form-group">
+            <label for="event-contact">Contact Email</label>
+            <input type="email" id="event-contact" maxlength="200"
+                   placeholder="e.g. club-president@wsu.edu">
           </div>
 
           <div class="form-group">
