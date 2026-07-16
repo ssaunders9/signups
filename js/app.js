@@ -71,7 +71,7 @@ var app = (function () {
     dom.signupForm.addEventListener('submit', handleSignup);
     dom.clubForm.addEventListener('submit', handleClubSubmit);
     dom.restrictToggle.addEventListener('change', function () {
-      dom.majorSelector.style.display = this.checked ? 'block' : 'none';
+      dom.majorSelector.style.display = (this.value === 'restricted') ? 'block' : 'none';
     });
     dom.closeAttendanceModal.addEventListener('click', closeAttendanceModal);
     dom.printAttendance.addEventListener('click', printAttendance);
@@ -230,8 +230,9 @@ var app = (function () {
           (full ? ' (Full)' : ' (' + spots + ' spots left)') +
         '</span>' +
       '</div>' +
+      '<p class="event-majors"><strong>Majors:</strong> ' +
+        (ev.allowedMajors ? escHtml(ev.allowedMajors) : 'All are welcome') + '</p>' +
       (ev.notes ? '<p class="event-notes"><strong>Notes:</strong> ' + escHtml(ev.notes) + '</p>' : '') +
-      (ev.allowedMajors ? '<p class="event-majors"><strong>Majors:</strong> ' + escHtml(ev.allowedMajors) + '</p>' : '') +
       '<div class="event-actions">' +
         (isPast || full
           ? (isPast ? '' : '<button class="btn btn-full" disabled>Event Full</button>')
@@ -390,6 +391,7 @@ var app = (function () {
       } else {
         showClubFeedback('Event submitted successfully!', 'success');
         dom.clubForm.reset();
+        dom.majorSelector.style.display = 'none';
         loadEvents();
       }
     }).catch(function (err) {
