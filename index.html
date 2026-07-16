@@ -178,11 +178,12 @@
                    value="50" required>
           </div>
 
-          <div class="form-group restrict-row">
-            <label class="checkbox-inline">
-              <input type="checkbox" id="restrict-majors-toggle">
-              <strong>Restrict by Major?</strong>
-            </label>
+          <div class="form-group">
+            <label for="restrict-majors-toggle">Major Restriction</label>
+            <select id="restrict-majors-toggle">
+              <option value="all">All are welcome</option>
+              <option value="restricted">Restricted to specific majors</option>
+            </select>
           </div>
 
           <div id="major-selector" style="display:none;">
