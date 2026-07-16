@@ -132,6 +132,15 @@ var app = (function () {
     dom.errorMsg.style.display = 'block';
   }
 
+  function refreshEvents() {
+    api.getEvents().then(function (data) {
+      if (!data.error) {
+        eventsCache = data.events || [];
+        renderEvents(eventsCache, data.signupCounts || {});
+      }
+    }).catch(function () { /* silent */ });
+  }
+
   // ── Render events ───────────────────────────────────────────────────────
 
   function renderEvents(events, signupCounts) {
@@ -307,10 +316,13 @@ var app = (function () {
       if (resp.error) {
         showSignupFeedback(resp.error, 'error');
       } else {
-        showSignupFeedback('Signed up successfully!', 'success');
+        var ev = eventsCache.find(function (e) { return e.id === data.eventId; });
+        showSignupFeedback('&#9989; Signed up! &#128197; <a class="ics-dl" href="' +
+          buildIcsUrl(ev || {}) + '" download="' +
+          escHtml(ev ? ev.eventName : 'event').replace(/\s+/g, '_') + '.ics">Add to Calendar</a>',
+          'success');
         dom.signupForm.reset();
-        dom.signupPanel.style.display = 'none';
-        loadEvents(); // refresh counts
+        refreshEvents();
       }
     }).catch(function (err) {
       btn.disabled = false;
@@ -321,7 +333,7 @@ var app = (function () {
   }
 
   function showSignupFeedback(msg, type) {
-    dom.signupFeedback.textContent = msg;
+    dom.signupFeedback.innerHTML = msg;
     dom.signupFeedback.className = 'feedback feedback-' + type;
     dom.signupFeedback.style.display = 'block';
   }
@@ -554,7 +566,40 @@ var app = (function () {
     });
   }
 
-  // ── Public ──────────────────────────────────────────────────────────────
+  function buildIcsUrl(ev) {
+    var d = toComparableDate(ev.eventDate);
+    if (!d) return '#';
+    var dateStr = d.getFullYear() +
+      pad(d.getMonth() + 1) + pad(d.getDate());
+
+    function to24h(t) {
+      if (!t) return '000000';
+      var m = String(t).match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!m) return '000000';
+      var h = parseInt(m[1], 10);
+      if (/PM/i.test(m[3]) && h < 12) h += 12;
+      if (/AM/i.test(m[3]) && h === 12) h = 0;
+      return pad(h) + pad(parseInt(m[2], 10)) + '00';
+    }
+
+    var start = to24h(ev.eventStartTime);
+    var end   = to24h(ev.eventEndTime);
+    var summary = (ev.eventName || 'Event') + ' (' + (ev.clubName || '') + ')';
+    var desc = (ev.notes || '') + (ev.location ? '\\nLocation: ' + ev.location : '');
+    var loc = ev.location || '';
+
+    var ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n' +
+      'DTSTART:' + dateStr + 'T' + start + '\n' +
+      'DTEND:'   + dateStr + 'T' + end   + '\n' +
+      'SUMMARY:' + summary + '\n' +
+      'LOCATION:' + loc + '\n' +
+      'DESCRIPTION:' + desc + '\n' +
+      'END:VEVENT\nEND:VCALENDAR';
+
+    return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+  }
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
   return { init: init };
 })();
