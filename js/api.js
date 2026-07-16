@@ -2,57 +2,49 @@
  * Club Calendar 101 — API Layer
  * =============================
  * All communication with the Google Apps Script backend goes through here.
+ * Uses GET exclusively — no POST, no preflight, no CORS issues.
  */
 
 var api = (function () {
   'use strict';
 
   /**
-   * Send a GET or POST to the backend.
-   * All POST bodies automatically include the shared API key.
+   * Build a GET URL with the action + data + apiKey as query params.
+   * The payload is JSON-stringified and passed as the "data" parameter.
    */
-  function _request(method, body) {
-    var url = CONFIG.API_BASE_URL;
+  function _get(action, data) {
+    var payload = Object.assign({}, data, { action: action, apiKey: CONFIG.API_KEY });
+    var params = Object.keys(payload).map(function (k) {
+      return encodeURIComponent(k) + '=' + encodeURIComponent(payload[k]);
+    }).join('&');
+    var url = CONFIG.API_BASE_URL + '?' + params;
 
-    if (method === 'GET') {
-      return fetch(url, { method: 'GET', cache: 'no-cache' })
-        .then(function (r) { return r.json(); });
-    }
-
-    // POST — attach API key to every payload.
-    // No Content-Type header: avoids CORS preflight that Apps Script can't handle.
-    var payload = Object.assign({}, body, { apiKey: CONFIG.API_KEY });
-    return fetch(url, {
-      method: 'POST',
-      cache: 'no-cache',
-      body: JSON.stringify(payload)
-    }).then(function (r) { return r.json(); });
+    return fetch(url, { method: 'GET', cache: 'no-cache' })
+      .then(function (r) { return r.json(); });
   }
 
   // ── Public API ──────────────────────────────────────────────────────────
 
   /** Get all events + signup counts */
   function getEvents() {
-    return _request('GET');
+    return _get('list-events', {});
   }
 
   /** Club submits a new event */
   function submitEvent(data) {
-    return _request('POST', {
-      action: 'submit-event',
+    return _get('submit-event', {
       clubName: data.clubName,
       eventName: data.eventName,
       eventDate: data.eventDate,
       eventTime: data.eventTime,
       maxAttendance: data.maxAttendance,
-      notes: data.notes
+      notes: data.notes || ''
     });
   }
 
   /** Student signs up for an event */
   function signup(data) {
-    return _request('POST', {
-      action: 'signup',
+    return _get('signup', {
       eventId: data.eventId,
       studentName: data.studentName,
       studentEmail: data.studentEmail,
@@ -62,10 +54,7 @@ var api = (function () {
 
   /** Club fetches signup list for one event */
   function getSignups(eventId) {
-    return _request('POST', {
-      action: 'get-signups',
-      eventId: eventId
-    });
+    return _get('get-signups', { eventId: eventId });
   }
 
   return {
