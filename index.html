@@ -184,6 +184,31 @@
                       placeholder="e.g. Open to all majors. Pizza provided.&#10;Or: Chemical engineering majors only."></textarea>
           </div>
 
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="restrict-majors-toggle">
+              <strong>Restrict by Major?</strong>
+            </label>
+          </div>
+
+          <div id="major-selector" style="display:none;">
+            <p style="font-size:0.85rem;color:#666;margin-bottom:8px;">
+              Select the majors allowed to attend:
+            </p>
+            <div class="major-grid">
+              <label><input type="checkbox" class="major-cb" value="Bioengineering"> Bioengineering</label>
+              <label><input type="checkbox" class="major-cb" value="Chemical"> Chemical</label>
+              <label><input type="checkbox" class="major-cb" value="Civil"> Civil</label>
+              <label><input type="checkbox" class="major-cb" value="Mechanical"> Mechanical</label>
+              <label><input type="checkbox" class="major-cb" value="Electrical"> Electrical</label>
+              <label><input type="checkbox" class="major-cb" value="Computer Science"> Computer Science</label>
+              <label><input type="checkbox" class="major-cb" value="Computer Engineering"> Computer Engineering</label>
+              <label><input type="checkbox" class="major-cb" value="Material Science"> Material Science</label>
+              <label><input type="checkbox" class="major-cb" value="Software Engineering"> Software Engineering</label>
+              <label><input type="checkbox" class="major-cb" value="Cybersecurity"> Cybersecurity</label>
+            </div>
+          </div>
+
           <button type="submit" class="btn btn-primary">Submit Event</button>
         </form>
         <div id="club-feedback" class="feedback" role="alert"></div>
