@@ -16,17 +16,17 @@ var api = (function () {
 
     if (method === 'GET') {
       return fetch(url, { method: 'GET', cache: 'no-cache' })
-        .then(function (r) { return r.text().then(function (t) { return JSON.parse(t); }); });
+        .then(function (r) { return r.json(); });
     }
 
     // POST — attach API key to every payload.
-    // Use text/plain to avoid CORS preflight (Apps Script doesn't handle OPTIONS).
+    // No Content-Type header: avoids CORS preflight that Apps Script can't handle.
     var payload = Object.assign({}, body, { apiKey: CONFIG.API_KEY });
     return fetch(url, {
       method: 'POST',
       cache: 'no-cache',
       body: JSON.stringify(payload)
-    }).then(function (r) { return r.text().then(function (t) { return JSON.parse(t); }); });
+    }).then(function (r) { return r.json(); });
   }
 
   // ── Public API ──────────────────────────────────────────────────────────
