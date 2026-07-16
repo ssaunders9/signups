@@ -371,6 +371,15 @@ body {
   display: block;
 }
 
+.ics-dl {
+  color: #2e7d32;
+  font-weight: 600;
+  text-decoration: underline;
+}
+.ics-dl:hover {
+  color: #1b5e20;
+}
+
 .feedback-error {
   background: #fbe9e7;
   color: #c62828;
