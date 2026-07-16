@@ -142,55 +142,111 @@ var app = (function () {
       return (a.eventDate || '').localeCompare(b.eventDate || '');
     });
 
+    // Split into upcoming (today + future) and past
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var upcoming = [];
+    var past = [];
+
     sorted.forEach(function (ev) {
-      var card = document.createElement('div');
-      card.className = 'event-card';
-
-      var count = signupCounts[ev.id] || 0;
-      var max   = parseInt(ev.maxAttendance, 10) || 0;
-      var spots = max - count;
-      var full  = spots <= 0;
-
-      var dateDisplay = formatDate(ev.eventDate);
-      var timeDisplay = escHtml(ev.eventStartTime || '') +
-                        (ev.eventEndTime ? ' – ' + escHtml(ev.eventEndTime) : '');
-
-      card.innerHTML =
-        '<div class="event-header">' +
-          '<h3>' + escHtml(ev.eventName) + '</h3>' +
-          '<span class="event-club">' + escHtml(ev.clubName) + '</span>' +
-        '</div>' +
-        '<div class="event-meta">' +
-          '<span class="event-date">&#128197; ' + dateDisplay + '</span>' +
-          '<span class="event-time">&#128338; ' + timeDisplay + '</span>' +
-          (ev.location ? '<span class="event-location">&#128205; ' + escHtml(ev.location) + '</span>' : '') +
-          (ev.contact ? '<span class="event-contact">&#9993; <a href="mailto:' + escHtml(ev.contact) + '">' + escHtml(ev.contact) + '</a></span>' : '') +
-          '<span class="event-capacity ' + (full ? 'full' : '') + '">' +
-            '&#128101; ' + count + ' / ' + max +
-            (full ? ' (Full)' : ' (' + spots + ' spots left)') +
-          '</span>' +
-        '</div>' +
-        (ev.notes ? '<p class="event-notes"><strong>Notes:</strong> ' + escHtml(ev.notes) + '</p>' : '') +
-        '<div class="event-actions">' +
-          (full
-            ? '<button class="btn btn-full" disabled>Event Full</button>'
-            : '<button class="btn btn-primary btn-signup" data-event-id="' + escHtml(ev.id) +
-              '" data-event-name="' + escHtml(ev.eventName) + '">Sign Up</button>') +
-          '<button class="btn btn-secondary btn-attendance" data-event-id="' + escHtml(ev.id) +
-            '" data-event-name="' + escHtml(ev.eventName) + '">&#128196; Attendance</button>' +
-        '</div>';
-
-      dom.eventList.appendChild(card);
+      var d = toComparableDate(ev.eventDate);
+      if (d && d >= today) {
+        upcoming.push(ev);
+      } else {
+        past.push(ev);
+      }
     });
 
-    // Bind signup buttons
+    // Render upcoming
+    if (upcoming.length === 0) {
+      dom.eventList.innerHTML = '<p class="empty-state">No upcoming events. Clubs, submit one!</p>';
+    } else {
+      upcoming.forEach(function (ev) {
+        dom.eventList.appendChild(buildCard(ev, signupCounts, false));
+      });
+    }
+
+    // Render past events behind a toggle
+    if (past.length > 0) {
+      var pastContainer = document.createElement('div');
+      pastContainer.className = 'past-events';
+
+      var toggle = document.createElement('button');
+      toggle.className = 'btn btn-secondary past-toggle';
+      toggle.textContent = '&#128336; Show ' + past.length + ' past event' + (past.length > 1 ? 's' : '');
+      toggle.addEventListener('click', function () {
+        var list = pastContainer.querySelector('.past-list');
+        var hidden = list.style.display === 'none';
+        list.style.display = hidden ? 'block' : 'none';
+        toggle.textContent = (hidden ? '&#128315; Hide' : '&#128336; Show') +
+          ' ' + past.length + ' past event' + (past.length > 1 ? 's' : '');
+      });
+      pastContainer.appendChild(toggle);
+
+      var pastList = document.createElement('div');
+      pastList.className = 'past-list';
+      pastList.style.display = 'none';
+      past.forEach(function (ev) {
+        pastList.appendChild(buildCard(ev, signupCounts, true));
+      });
+      pastContainer.appendChild(pastList);
+
+      dom.eventList.appendChild(pastContainer);
+    }
+
+    bindCardButtons();
+  }
+
+  function buildCard(ev, signupCounts, isPast) {
+    var card = document.createElement('div');
+    card.className = 'event-card' + (isPast ? ' past' : '');
+
+    var count = signupCounts[ev.id] || 0;
+    var max   = parseInt(ev.maxAttendance, 10) || 0;
+    var spots = max - count;
+    var full  = spots <= 0;
+
+    var dateDisplay = formatDate(ev.eventDate);
+    var timeDisplay = escHtml(ev.eventStartTime || '') +
+                      (ev.eventEndTime ? ' – ' + escHtml(ev.eventEndTime) : '');
+
+    card.innerHTML =
+      '<div class="event-header">' +
+        '<h3>' + escHtml(ev.eventName) + '</h3>' +
+        '<span class="event-club">' + escHtml(ev.clubName) + '</span>' +
+      '</div>' +
+      '<div class="event-meta">' +
+        '<span class="event-date">&#128197; ' + dateDisplay + '</span>' +
+        '<span class="event-time">&#128338; ' + timeDisplay + '</span>' +
+        (ev.location ? '<span class="event-location">&#128205; ' + escHtml(ev.location) + '</span>' : '') +
+        (ev.contact ? '<span class="event-contact">&#9993; <a href="mailto:' + escHtml(ev.contact) + '">' + escHtml(ev.contact) + '</a></span>' : '') +
+        '<span class="event-capacity ' + (full ? 'full' : '') + '">' +
+          '&#128101; ' + count + ' / ' + max +
+          (full ? ' (Full)' : ' (' + spots + ' spots left)') +
+        '</span>' +
+      '</div>' +
+      (ev.notes ? '<p class="event-notes"><strong>Notes:</strong> ' + escHtml(ev.notes) + '</p>' : '') +
+      '<div class="event-actions">' +
+        (isPast || full
+          ? (isPast ? '' : '<button class="btn btn-full" disabled>Event Full</button>')
+          : '<button class="btn btn-primary btn-signup" data-event-id="' + escHtml(ev.id) +
+            '" data-event-name="' + escHtml(ev.eventName) + '">Sign Up</button>') +
+        '<button class="btn btn-secondary btn-attendance" data-event-id="' + escHtml(ev.id) +
+          '" data-event-name="' + escHtml(ev.eventName) + '">&#128196; Attendance</button>' +
+      '</div>';
+
+    return card;
+  }
+
+  // ── Button binding ───────────────────────────────────────────────────
+
+  function bindCardButtons() {
     dom.eventList.querySelectorAll('.btn-signup').forEach(function (btn) {
       btn.addEventListener('click', function () {
         openSignup(btn.dataset.eventId, btn.dataset.eventName);
       });
     });
 
-    // Bind attendance buttons
     dom.eventList.querySelectorAll('.btn-attendance').forEach(function (btn) {
       btn.addEventListener('click', function () {
         openAttendance(btn.dataset.eventId, btn.dataset.eventName);
@@ -464,20 +520,19 @@ var app = (function () {
       .replace(/'/g, '&#39;');
   }
 
-  function formatDate(val) {
-    if (!val) return '';
-    // Google Sheets may return a Date object or a string like "2026-07-23"
-    var d;
-    if (val instanceof Date) {
-      d = val;
-    } else if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
-      // Parse as local date to avoid timezone shift
-      var parts = val.split('-');
-      d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-    } else {
-      d = new Date(val);
+  function toComparableDate(val) {
+    if (!val) return null;
+    if (val instanceof Date) return val;
+    if (typeof val === 'string') {
+      var m = val.match(/^(\d{4})-(\d{2})-(\d{2})/);  // matches ISO or plain date
+      if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
     }
-    if (isNaN(d.getTime())) return '';
+    return null;
+  }
+
+  function formatDate(val) {
+    var d = toComparableDate(val);
+    if (!d) return '';
     return d.toLocaleDateString('en-US', {
       weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
     });
