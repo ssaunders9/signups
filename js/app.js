@@ -346,6 +346,17 @@ var app = (function () {
   // ── Attendance modal ────────────────────────────────────────────────────
 
   function openAttendance(eventId, eventName) {
+    // PIN gate — stored for the session so clubs only enter it once
+    var unlocked = sessionStorage.getItem('attendance_unlocked');
+    if (!unlocked) {
+      var pin = prompt('Enter the club attendance PIN to view signups:');
+      if (pin !== CONFIG.ATTENDANCE_PIN) {
+        alert('Incorrect PIN.');
+        return;
+      }
+      sessionStorage.setItem('attendance_unlocked', '1');
+    }
+
     dom.attendanceEventName.textContent = eventName;
     dom.attendanceList.innerHTML = '<p class="loading">Loading…</p>';
     dom.attendanceCount.textContent = '—';
