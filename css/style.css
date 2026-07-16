@@ -120,6 +120,22 @@ body {
   box-shadow: 0 3px 12px rgba(0,0,0,0.1);
 }
 
+.event-card.past {
+  border-left-color: #999;
+  opacity: 0.75;
+}
+
+.past-events {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 2px dashed #d0d0d0;
+}
+
+.past-toggle {
+  display: block;
+  margin: 0 auto 12px;
+}
+
 .event-header {
   display: flex;
   justify-content: space-between;
