@@ -55,9 +55,9 @@ var api = (function () {
     });
   }
 
-  /** Club fetches signup list for one event */
-  function getSignups(eventId) {
-    return _get('get-signups', { eventId: eventId });
+  /** Club fetches signup list for one event (requires attendance PIN) */
+  function getSignups(eventId, pin) {
+    return _get('get-signups', { eventId: eventId, pin: pin });
   }
 
   return {
