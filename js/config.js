@@ -1,12 +1,21 @@
 /**
  * Club Calendar 101 — Configuration
  * =================================
- * After deploying the Google Apps Script backend, paste the web-app URL below
- * and set the same API_KEY that you set in backend/Code.gs.
+ * Values are base64-encoded to avoid casual plaintext snooping.
+ * The real values are decoded at runtime via atob().
  */
 
-var CONFIG = {
-  API_BASE_URL: 'https://script.google.com/macros/s/AKfycbym2rlJRMWfIUr8j-QxLOhcYRV7mfhAjP4uzAC-n-BeIZUh_bERQX0usGOBG858VEEgiw/exec',
-  API_KEY: 'cC7xKp9vR2mN4wL8jF3hQ6tY1bA5dG0e',
-  ATTENDANCE_PIN: '1010'  // 4-digit PIN clubs use to view attendance sheets
-};
+var CONFIG = (function () {
+  // Base64-encoded to deter casual snooping (not cryptographic — anyone
+  // with a console can decode these, but they won't appear in plaintext
+  // when viewing source).
+  var _enc = {
+    url: 'aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5bTJybEpSTVdmSVVyOGotUXhMT2hjWVJWN21maEFqUDR1ekFDLW4tQmVJWlVoX2JFUlFYMHVzR09CRzg1OFZFRWdpdy9leGVj',
+    key: 'Y0M3eEtwOXYyUm0yTjR3TDhqRjNoUTZ0WTFBYTVHMGU='
+  };
+
+  return {
+    API_BASE_URL: atob(_enc.url),
+    API_KEY: atob(_enc.key)
+  };
+})();
