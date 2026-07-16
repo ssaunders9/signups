@@ -20,6 +20,7 @@ var app = (function () {
     dom.eventList       = $('event-list');
     dom.loadingMsg      = $('loading-msg');
     dom.errorMsg        = $('error-msg');
+    dom.signupPanel     = $('signup-panel');
     dom.signupForm      = $('signup-form');
     dom.signupEventId   = $('signup-event-id');
     dom.signupEventName = $('signup-event-name');
@@ -35,6 +36,7 @@ var app = (function () {
     dom.eventStartTime  = $('event-start-time');
     dom.eventEndTime    = $('event-end-time');
     dom.eventLocation   = $('event-location');
+    dom.eventContact    = $('event-contact');
     dom.maxAttendance   = $('max-attendance');
     dom.notes           = $('event-notes');
 
@@ -162,12 +164,13 @@ var app = (function () {
           '<span class="event-date">&#128197; ' + dateDisplay + '</span>' +
           '<span class="event-time">&#128338; ' + timeDisplay + '</span>' +
           (ev.location ? '<span class="event-location">&#128205; ' + escHtml(ev.location) + '</span>' : '') +
+          (ev.contact ? '<span class="event-contact">&#9993; <a href="mailto:' + escHtml(ev.contact) + '">' + escHtml(ev.contact) + '</a></span>' : '') +
           '<span class="event-capacity ' + (full ? 'full' : '') + '">' +
             '&#128101; ' + count + ' / ' + max +
             (full ? ' (Full)' : ' (' + spots + ' spots left)') +
           '</span>' +
         '</div>' +
-        (ev.notes ? '<p class="event-notes">' + escHtml(ev.notes) + '</p>' : '') +
+        (ev.notes ? '<p class="event-notes"><strong>Notes:</strong> ' + escHtml(ev.notes) + '</p>' : '') +
         '<div class="event-actions">' +
           (full
             ? '<button class="btn btn-full" disabled>Event Full</button>'
@@ -200,10 +203,10 @@ var app = (function () {
   function openSignup(eventId, eventName) {
     dom.signupEventId.value = eventId;
     dom.signupEventName.textContent = eventName;
-    dom.signupForm.style.display = 'block';
+    dom.signupPanel.style.display = 'block';
     dom.signupFeedback.style.display = 'none';
     dom.signupFeedback.className = 'feedback';
-    dom.signupForm.scrollIntoView({ behavior: 'smooth' });
+    dom.signupPanel.scrollIntoView({ behavior: 'smooth' });
   }
 
   function handleSignup(e) {
@@ -243,7 +246,7 @@ var app = (function () {
       } else {
         showSignupFeedback('Signed up successfully!', 'success');
         dom.signupForm.reset();
-        dom.signupForm.style.display = 'none';
+        dom.signupPanel.style.display = 'none';
         loadEvents(); // refresh counts
       }
     }).catch(function (err) {
@@ -272,6 +275,7 @@ var app = (function () {
       eventStartTime: dom.eventStartTime.value,
       eventEndTime: dom.eventEndTime.value,
       location: dom.eventLocation.value.trim(),
+      contact: dom.eventContact.value.trim(),
       maxAttendance: parseInt(dom.maxAttendance.value, 10),
       notes: dom.notes.value.trim()
     };
@@ -446,7 +450,9 @@ var app = (function () {
 
   function formatDate(iso) {
     if (!iso) return '';
-    var d = new Date(iso + 'T00:00:00');
+    // Google Sheets may return a Date object instead of a string
+    var d = (iso instanceof Date) ? iso : new Date(iso + 'T00:00:00');
+    if (isNaN(d.getTime())) return '';
     return d.toLocaleDateString('en-US', {
       weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
     });
