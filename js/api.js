@@ -41,7 +41,8 @@ var api = (function () {
       location: data.location || '',
       contact: data.contact || '',
       maxAttendance: data.maxAttendance,
-      notes: data.notes || ''
+      notes: data.notes || '',
+      allowedMajors: data.allowedMajors || ''
     });
   }
 
