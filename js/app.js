@@ -14,8 +14,10 @@ var app = (function () {
   var dom = {};
   function cacheDom() {
     dom.tabStudent      = $('tab-student');
+    dom.tabCalendar     = $('tab-calendar');
     dom.tabClub         = $('tab-club');
     dom.viewStudent     = $('view-student');
+    dom.viewCalendar    = $('view-calendar');
     dom.viewClub        = $('view-club');
     dom.eventList       = $('event-list');
     dom.loadingMsg      = $('loading-msg');
@@ -42,6 +44,13 @@ var app = (function () {
     dom.restrictToggle  = $('restrict-majors-toggle');
     dom.majorSelector   = $('major-selector');
 
+    // Calendar
+    dom.calPrev     = $('cal-prev');
+    dom.calNext     = $('cal-next');
+    dom.calTitle    = $('cal-title');
+    dom.calGrid     = $('cal-grid');
+    dom.calDayEvts  = $('cal-day-events');
+
     // Attendance modal
     dom.attendanceModal      = $('attendance-modal');
     dom.attendanceEventName  = $('attendance-event-name');
@@ -55,6 +64,7 @@ var app = (function () {
   // ── State ───────────────────────────────────────────────────────────────
 
   var eventsCache = [];
+  var calMonthOffset = 0;  // 0 = current month, -1 = last month, etc.
 
   // ── Init ────────────────────────────────────────────────────────────────
 
@@ -66,6 +76,7 @@ var app = (function () {
 
   function bindEvents() {
     dom.tabStudent.addEventListener('click', function () { switchTab('student'); });
+    dom.tabCalendar.addEventListener('click', function () { switchTab('calendar'); });
     dom.tabClub.addEventListener('click', function () { switchTab('club'); });
 
     dom.signupForm.addEventListener('submit', handleSignup);
@@ -73,6 +84,8 @@ var app = (function () {
     dom.restrictToggle.addEventListener('change', function () {
       dom.majorSelector.style.display = (this.value === 'restricted') ? 'block' : 'none';
     });
+    dom.calPrev.addEventListener('click', function () { calMonthOffset--; renderCalendar(); });
+    dom.calNext.addEventListener('click', function () { calMonthOffset++; renderCalendar(); });
     dom.closeAttendanceModal.addEventListener('click', closeAttendanceModal);
     dom.printAttendance.addEventListener('click', printAttendance);
 
@@ -90,17 +103,22 @@ var app = (function () {
   // ── Tab switching ───────────────────────────────────────────────────────
 
   function switchTab(tab) {
-    if (tab === 'student') {
-      dom.tabStudent.classList.add('active');
-      dom.tabClub.classList.remove('active');
-      dom.viewStudent.classList.add('active');
-      dom.viewClub.classList.remove('active');
-    } else {
-      dom.tabClub.classList.add('active');
-      dom.tabStudent.classList.remove('active');
-      dom.viewClub.classList.add('active');
-      dom.viewStudent.classList.remove('active');
-    }
+    var tabs = [
+      { btn: dom.tabStudent,  view: dom.viewStudent },
+      { btn: dom.tabCalendar, view: dom.viewCalendar },
+      { btn: dom.tabClub,     view: dom.viewClub }
+    ];
+    tabs.forEach(function (t) {
+      var on = t.btn.id === ('tab-' + tab) || t.btn === dom['tab-' + tab];
+      if (on) {
+        t.btn.classList.add('active');
+        t.view.classList.add('active');
+      } else {
+        t.btn.classList.remove('active');
+        t.view.classList.remove('active');
+      }
+    });
+    if (tab === 'calendar') { renderCalendar(); }
   }
 
   // ── Load events ─────────────────────────────────────────────────────────
@@ -563,6 +581,83 @@ var app = (function () {
     if (!d) return '';
     return d.toLocaleDateString('en-US', {
       weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+    });
+  }
+
+  // ── Calendar ─────────────────────────────────────────────────────────────
+
+  function renderCalendar() {
+    var now = new Date();
+    var y = now.getFullYear();
+    var m = now.getMonth() + calMonthOffset;
+    y += Math.floor(m / 12);
+    m = ((m % 12) + 12) % 12;
+
+    var firstDay = new Date(y, m, 1);
+    var lastDay  = new Date(y, m + 1, 0);
+    var startDow = firstDay.getDay();
+    var daysInMonth = lastDay.getDate();
+
+    dom.calTitle.textContent = firstDay.toLocaleDateString('en-US', {
+      month: 'long', year: 'numeric'
+    });
+
+    var evByDate = {};
+    eventsCache.forEach(function (ev) {
+      var key = toComparableDate(ev.eventDate);
+      if (!key) return;
+      key = key.getFullYear() + '-' + pad(key.getMonth() + 1) + '-' + pad(key.getDate());
+      if (!evByDate[key]) evByDate[key] = [];
+      evByDate[key].push(ev);
+    });
+
+    var html = '<div class="cal-weekdays">' +
+      ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+        .map(function (d) { return '<span>' + d + '</span>'; }).join('') +
+      '</div><div class="cal-days">';
+
+    for (var i = 0; i < startDow; i++) {
+      html += '<div class="cal-day empty"></div>';
+    }
+
+    var todayKey = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+
+    for (var d = 1; d <= daysInMonth; d++) {
+      var dateKey = y + '-' + pad(m + 1) + '-' + pad(d);
+      var evts = evByDate[dateKey] || [];
+      var cls = 'cal-day';
+      if (dateKey === todayKey) cls += ' today';
+      if (evts.length) cls += ' has-events';
+
+      html += '<div class="' + cls + '" data-date="' + dateKey + '">' +
+        '<span class="cal-day-num">' + d + '</span>' +
+        (evts.length ? '<span class="cal-dot">' + evts.length + '</span>' : '') +
+        '</div>';
+    }
+
+    html += '</div>';
+    dom.calGrid.innerHTML = html;
+    dom.calDayEvts.innerHTML = '';
+
+    dom.calGrid.querySelectorAll('.cal-day.has-events').forEach(function (cell) {
+      cell.addEventListener('click', function () {
+        var date = cell.dataset.date;
+        var evts = evByDate[date] || [];
+        dom.calGrid.querySelectorAll('.cal-day.selected').forEach(function (c) {
+          c.classList.remove('selected');
+        });
+        cell.classList.add('selected');
+
+        var listHtml = '<h3 class="cal-day-title">Events on ' +
+          new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
+            weekday: 'long', month: 'long', day: 'numeric'
+          }) + '</h3>';
+        evts.forEach(function (ev) {
+          listHtml += buildCard(ev, {}, false).outerHTML;
+        });
+        dom.calDayEvts.innerHTML = listHtml;
+        bindCardButtons();
+      });
     });
   }
 
