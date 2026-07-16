@@ -39,6 +39,8 @@ var app = (function () {
     dom.eventContact    = $('event-contact');
     dom.maxAttendance   = $('max-attendance');
     dom.notes           = $('event-notes');
+    dom.restrictToggle  = $('restrict-majors-toggle');
+    dom.majorSelector   = $('major-selector');
 
     // Attendance modal
     dom.attendanceModal      = $('attendance-modal');
@@ -68,6 +70,9 @@ var app = (function () {
 
     dom.signupForm.addEventListener('submit', handleSignup);
     dom.clubForm.addEventListener('submit', handleClubSubmit);
+    dom.restrictToggle.addEventListener('change', function () {
+      dom.majorSelector.style.display = this.checked ? 'block' : 'none';
+    });
     dom.closeAttendanceModal.addEventListener('click', closeAttendanceModal);
     dom.printAttendance.addEventListener('click', printAttendance);
 
@@ -226,6 +231,7 @@ var app = (function () {
         '</span>' +
       '</div>' +
       (ev.notes ? '<p class="event-notes"><strong>Notes:</strong> ' + escHtml(ev.notes) + '</p>' : '') +
+      (ev.allowedMajors ? '<p class="event-majors"><strong>Majors:</strong> ' + escHtml(ev.allowedMajors) + '</p>' : '') +
       '<div class="event-actions">' +
         (isPast || full
           ? (isPast ? '' : '<button class="btn btn-full" disabled>Event Full</button>')
@@ -333,7 +339,8 @@ var app = (function () {
       location: dom.eventLocation.value.trim(),
       contact: dom.eventContact.value.trim(),
       maxAttendance: parseInt(dom.maxAttendance.value, 10),
-      notes: dom.notes.value.trim()
+      notes: dom.notes.value.trim(),
+      allowedMajors: collectMajors()
     };
 
     // Client-side validation (mirrors server validation)
@@ -397,6 +404,13 @@ var app = (function () {
     dom.clubFeedback.textContent = msg;
     dom.clubFeedback.className = 'feedback feedback-' + type;
     dom.clubFeedback.style.display = 'block';
+  }
+
+  function collectMajors() {
+    var cbs = document.querySelectorAll('.major-cb:checked');
+    var majors = [];
+    cbs.forEach(function (cb) { majors.push(cb.value); });
+    return majors.join(',');
   }
 
   // ── Attendance modal ────────────────────────────────────────────────────
