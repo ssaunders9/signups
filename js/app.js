@@ -464,10 +464,19 @@ var app = (function () {
       .replace(/'/g, '&#39;');
   }
 
-  function formatDate(iso) {
-    if (!iso) return '';
-    // Google Sheets may return a Date object instead of a string
-    var d = (iso instanceof Date) ? iso : new Date(iso + 'T00:00:00');
+  function formatDate(val) {
+    if (!val) return '';
+    // Google Sheets may return a Date object or a string like "2026-07-23"
+    var d;
+    if (val instanceof Date) {
+      d = val;
+    } else if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+      // Parse as local date to avoid timezone shift
+      var parts = val.split('-');
+      d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+    } else {
+      d = new Date(val);
+    }
     if (isNaN(d.getTime())) return '';
     return d.toLocaleDateString('en-US', {
       weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
