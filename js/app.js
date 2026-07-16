@@ -32,7 +32,9 @@ var app = (function () {
     dom.clubName        = $('club-name');
     dom.eventName       = $('event-name');
     dom.eventDate       = $('event-date');
-    dom.eventTime       = $('event-time');
+    dom.eventStartTime  = $('event-start-time');
+    dom.eventEndTime    = $('event-end-time');
+    dom.eventLocation   = $('event-location');
     dom.maxAttendance   = $('max-attendance');
     dom.notes           = $('event-notes');
 
@@ -148,6 +150,8 @@ var app = (function () {
       var full  = spots <= 0;
 
       var dateDisplay = formatDate(ev.eventDate);
+      var timeDisplay = escHtml(ev.eventStartTime || '') +
+                        (ev.eventEndTime ? ' – ' + escHtml(ev.eventEndTime) : '');
 
       card.innerHTML =
         '<div class="event-header">' +
@@ -156,7 +160,8 @@ var app = (function () {
         '</div>' +
         '<div class="event-meta">' +
           '<span class="event-date">&#128197; ' + dateDisplay + '</span>' +
-          '<span class="event-time">&#128338; ' + escHtml(ev.eventTime) + '</span>' +
+          '<span class="event-time">&#128338; ' + timeDisplay + '</span>' +
+          (ev.location ? '<span class="event-location">&#128205; ' + escHtml(ev.location) + '</span>' : '') +
           '<span class="event-capacity ' + (full ? 'full' : '') + '">' +
             '&#128101; ' + count + ' / ' + max +
             (full ? ' (Full)' : ' (' + spots + ' spots left)') +
@@ -264,7 +269,9 @@ var app = (function () {
       clubName: dom.clubName.value.trim(),
       eventName: dom.eventName.value.trim(),
       eventDate: dom.eventDate.value,
-      eventTime: dom.eventTime.value.trim(),
+      eventStartTime: dom.eventStartTime.value,
+      eventEndTime: dom.eventEndTime.value,
+      location: dom.eventLocation.value.trim(),
       maxAttendance: parseInt(dom.maxAttendance.value, 10),
       notes: dom.notes.value.trim()
     };
@@ -282,8 +289,16 @@ var app = (function () {
       showClubFeedback('Please select a date.', 'error');
       return;
     }
-    if (!data.eventTime || data.eventTime.length > 50) {
-      showClubFeedback('Please enter a valid time.', 'error');
+    if (!data.eventStartTime) {
+      showClubFeedback('Please select a start time.', 'error');
+      return;
+    }
+    if (!data.eventEndTime) {
+      showClubFeedback('Please select an end time.', 'error');
+      return;
+    }
+    if (!data.location || data.location.length > 200) {
+      showClubFeedback('Please enter a location (max 200 chars).', 'error');
       return;
     }
     if (isNaN(data.maxAttendance) || data.maxAttendance < 1 || data.maxAttendance > 10000) {
