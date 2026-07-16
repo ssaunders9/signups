@@ -584,7 +584,7 @@ var app = (function () {
 
     var start = to24h(ev.eventStartTime);
     var end   = to24h(ev.eventEndTime);
-    var summary = (ev.eventName || 'Event') + ' (' + (ev.clubName || '') + ')';
+    var summary = (ev.clubName || '') + ' — ' + (ev.eventName || 'Event');
     var desc = (ev.notes || '') + (ev.location ? '\\nLocation: ' + ev.location : '');
     var loc = ev.location || '';
 
@@ -596,7 +596,9 @@ var app = (function () {
       'DESCRIPTION:' + desc + '\n' +
       'END:VEVENT\nEND:VCALENDAR';
 
-    return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+    // Blob works on all platforms (iOS Safari doesn't support data: URI downloads)
+    var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    return URL.createObjectURL(blob);
   }
 
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
