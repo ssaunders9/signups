@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://script.google.com;">
+
+  <title>Club Calendar 101 — WSU Voiland College</title>
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <!--
+    Security note: this is a fully static site hosted on GitHub Pages.
+    No secrets are stored client-side beyond the shared API key in js/config.js
+    which must match the key set in the Google Apps Script backend.
+    All inputs are sanitized both client-side and server-side.
+    CSP is enforced via the meta tag above.
+  -->
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       HEADER
+       ════════════════════════════════════════════════════════════════════ -->
+  <header class="site-header">
+    <h1>Club Calendar 101</h1>
+    <p class="subtitle">ENGR 101 — Club Events &amp; Signups</p>
+
+    <nav class="tab-nav" role="tablist">
+      <button id="tab-student" class="tab-btn active" role="tab"
+              aria-selected="true" aria-controls="view-student">
+        &#127891; Student View
+      </button>
+      <button id="tab-club" class="tab-btn" role="tab"
+              aria-selected="false" aria-controls="view-club">
+        &#128196; Club View
+      </button>
+    </nav>
+  </header>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       MAIN CONTENT
+       ════════════════════════════════════════════════════════════════════ -->
+  <main class="container">
+
+    <!-- ── Student View ────────────────────────────────────────────────── -->
+    <section id="view-student" class="tab-view active" role="tabpanel"
+             aria-labelledby="tab-student">
+
+      <h2 class="section-heading">Upcoming Club Events</h2>
+
+      <div id="loading-msg" class="loading-msg">Loading events&hellip;</div>
+      <div id="error-msg" class="error-msg" role="alert"></div>
+
+      <div id="event-list" aria-live="polite">
+        <!-- Dynamically populated by app.js -->
+      </div>
+
+      <!-- Student signup form (hidden until "Sign Up" is clicked) -->
+      <div id="signup-form" class="form-panel" style="display:none;">
+        <h3>Sign Up: <span id="signup-event-name"></span></h3>
+        <form>
+          <input type="hidden" id="signup-event-id">
+
+          <div class="form-group">
+            <label for="signup-name">Full Name</label>
+            <input type="text" id="signup-name" maxlength="150" required
+                   placeholder="Jane Cougar">
+          </div>
+
+          <div class="form-group">
+            <label for="signup-email">WSU Email</label>
+            <input type="email" id="signup-email" maxlength="200" required
+                   placeholder="jane.cougar@wsu.edu">
+          </div>
+
+          <div class="form-group">
+            <label for="signup-wsuid">WSU ID Number</label>
+            <input type="text" id="signup-wsuid" maxlength="9" required
+                   placeholder="12345678" inputmode="numeric" pattern="\d{8,9}">
+          </div>
+
+          <button type="submit" class="btn btn-primary">Confirm Signup</button>
+        </form>
+        <div id="signup-feedback" class="feedback" role="alert"></div>
+      </div>
+    </section>
+
+    <!-- ── Club View ───────────────────────────────────────────────────── -->
+    <section id="view-club" class="tab-view" role="tabpanel"
+             aria-labelledby="tab-club">
+
+      <h2 class="section-heading">Submit a New Event</h2>
+
+      <div id="club-form" class="form-panel">
+        <form>
+          <div class="form-group">
+            <label for="club-name">Club / Organization Name</label>
+            <input type="text" id="club-name" maxlength="100" required
+                   placeholder="e.g. American Institute of Chemical Engineers">
+          </div>
+
+          <div class="form-group">
+            <label for="event-name">Event Name</label>
+            <input type="text" id="event-name" maxlength="200" required
+                   placeholder="e.g. Meet &amp; Greet with Industry Panel">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="event-date">Date</label>
+              <input type="date" id="event-date" required>
+            </div>
+
+            <div class="form-group">
+              <label for="event-time">Time</label>
+              <input type="text" id="event-time" maxlength="50" required
+                     placeholder="e.g. 5:00 PM – 6:30 PM">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="max-attendance">Maximum Attendance</label>
+            <input type="number" id="max-attendance" min="1" max="10000"
+                   value="50" required>
+          </div>
+
+          <div class="form-group">
+            <label for="event-notes">Notes / Restrictions</label>
+            <textarea id="event-notes" maxlength="500" rows="3"
+                      placeholder="e.g. Open to all majors. Pizza provided.&#10;Or: Chemical engineering majors only."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Submit Event</button>
+        </form>
+        <div id="club-feedback" class="feedback" role="alert"></div>
+      </div>
+
+      <p style="color:#888;font-size:0.85rem;margin-top:12px;">
+        After submission, your event will appear in the Student View tab above.
+        Students can then sign up, and you can view &#47; print the attendance
+        sheet by clicking the &#8220;&#128196; Attendance&#8221; button on your event card.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       ATTENDANCE MODAL
+       ════════════════════════════════════════════════════════════════════ -->
+  <div id="attendance-modal" class="modal-overlay" role="dialog"
+       aria-modal="true" aria-labelledby="attendance-event-name">
+    <div class="modal">
+      <h2 id="attendance-event-name"></h2>
+      <p class="modal-subtitle">
+        Signed up: <strong id="attendance-count">—</strong>
+        / <span id="attendance-max">—</span>
+      </p>
+
+      <div id="attendance-list">
+        <!-- Dynamically populated -->
+      </div>
+
+      <div class="modal-actions">
+        <button id="close-attendance-modal" class="btn btn-secondary">Close</button>
+        <button id="print-attendance" class="btn btn-primary">&#128424; Print Attendance Sheet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       FOOTER
+       ════════════════════════════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    WSU Voiland College of Engineering &amp; Architecture &mdash; ENGR 101
+  </footer>
+
+  <!-- Scripts (order matters: config → api → app) -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
