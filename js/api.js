@@ -36,7 +36,9 @@ var api = (function () {
       clubName: data.clubName,
       eventName: data.eventName,
       eventDate: data.eventDate,
-      eventTime: data.eventTime,
+      eventStartTime: data.eventStartTime,
+      eventEndTime: data.eventEndTime,
+      location: data.location || '',
       maxAttendance: data.maxAttendance,
       notes: data.notes || ''
     });
