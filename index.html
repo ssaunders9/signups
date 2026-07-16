@@ -178,14 +178,8 @@
                    value="50" required>
           </div>
 
-          <div class="form-group">
-            <label for="event-notes">Notes / Restrictions</label>
-            <textarea id="event-notes" maxlength="500" rows="3"
-                      placeholder="e.g. Open to all majors. Pizza provided.&#10;Or: Chemical engineering majors only."></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="checkbox-label">
+          <div class="form-group restrict-row">
+            <label class="checkbox-inline">
               <input type="checkbox" id="restrict-majors-toggle">
               <strong>Restrict by Major?</strong>
             </label>
@@ -207,6 +201,12 @@
               <label><input type="checkbox" class="major-cb" value="Software Engineering"> Software Engineering</label>
               <label><input type="checkbox" class="major-cb" value="Cybersecurity"> Cybersecurity</label>
             </div>
+          </div>
+
+          <div class="form-group">
+            <label for="event-notes">Notes / Restrictions</label>
+            <textarea id="event-notes" maxlength="500" rows="3"
+                      placeholder="e.g. Open to all majors. Pizza provided.&#10;Or: Chemical engineering majors only."></textarea>
           </div>
 
           <button type="submit" class="btn btn-primary">Submit Event</button>
