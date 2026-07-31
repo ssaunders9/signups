@@ -103,13 +103,27 @@ function doGet(e) {
 }
 
 function doPost(e) {
-  return error_('POST not supported — use GET');
+  if (!checkRateLimit_()) {
+    return error_('Rate limit exceeded. Try again later.');
+  }
+
+  var body;
+  try {
+    body = JSON.parse(e.postData.contents || '{}');
+  } catch (err) {
+    return error_('Invalid JSON body');
+  }
+  return handlePayload_(body);
 }
 
 // ── Action Router ────────────────────────────────────────────────────────────
 
 function handleAction_(e) {
   var p = e.parameter; // query-string parameters
+  return handlePayload_(p);
+}
+
+function handlePayload_(p) {
   var action = p.action;
 
   // API-key check

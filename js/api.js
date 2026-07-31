@@ -2,7 +2,8 @@
  * Club Calendar 101 — API Layer
  * =============================
  * All communication with the Google Apps Script backend goes through here.
- * Uses GET exclusively — no POST, no preflight, no CORS issues.
+ * Uses GET for public event listing and simple POST requests for submissions
+ * and signup data, avoiding PII in URL query strings.
  */
 
 var api = (function () {
@@ -23,6 +24,22 @@ var api = (function () {
       .then(function (r) { return r.json(); });
   }
 
+  function _post(action, data) {
+    var payload = Object.assign({}, data, {
+      action: action,
+      apiKey: CONFIG.API_KEY
+    });
+
+    // Do not set Content-Type: application/json. Sending the JSON string
+    // without custom headers keeps this a simple request and avoids OPTIONS
+    // preflight, which Apps Script web apps do not handle reliably.
+    return fetch(CONFIG.API_BASE_URL, {
+      method: 'POST',
+      cache: 'no-cache',
+      body: JSON.stringify(payload)
+    }).then(function (r) { return r.json(); });
+  }
+
   // ── Public API ──────────────────────────────────────────────────────────
 
   /** Get all events + signup counts */
@@ -32,7 +49,7 @@ var api = (function () {
 
   /** Club submits a new event */
   function submitEvent(data) {
-    return _get('submit-event', {
+    return _post('submit-event', {
       clubName: data.clubName,
       eventName: data.eventName,
       eventDate: data.eventDate,
@@ -49,7 +66,7 @@ var api = (function () {
 
   /** Student signs up for an event */
   function signup(data) {
-    return _get('signup', {
+    return _post('signup', {
       eventId: data.eventId,
       studentName: data.studentName,
       studentEmail: data.studentEmail,
@@ -59,7 +76,7 @@ var api = (function () {
 
   /** Club fetches signup list for one event (requires attendance PIN) */
   function getSignups(eventId, pin) {
-    return _get('get-signups', { eventId: eventId, pin: pin });
+    return _post('get-signups', { eventId: eventId, pin: pin });
   }
 
   return {
