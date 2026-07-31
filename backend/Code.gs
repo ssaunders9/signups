@@ -146,7 +146,7 @@ function handlePayload_(p) {
 
 // ── List Events ──────────────────────────────────────────────────────────────
 
-function listEvents_(e) {
+function listEvents_() {
   var sheet = getSheet_(SHEET_EVENTS);
   var data = sheet.getDataRange().getValues();
   if (data.length < 2) {
