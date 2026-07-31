@@ -132,7 +132,7 @@ function handlePayload_(p) {
   }
 
   if (action === 'list-events') {
-    return listEvents_(e);
+    return listEvents_();
   } else if (action === 'submit-event') {
     return submitEvent_(p);
   } else if (action === 'signup') {
