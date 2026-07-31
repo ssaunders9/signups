@@ -85,6 +85,10 @@ Club_Calendar_101/
 - **Past Events**: Automatically sorted behind a collapsible toggle.
 - **Capacity Tracking**: Cards show spots remaining; signup button disables
   when full. Duplicate email signups are prevented.
+- **Scope**: This application is intended for routine ENGR 101 event
+   coordination. It is not designed for confidential records or high-risk
+   authentication. Student identity is self-reported and event data is stored
+   in the connected Google Sheet.
 
 ## Usage
 
@@ -122,4 +126,5 @@ and script sources. Rate limiting prevents abuse. Sensitive views are
 gated behind credentials validated exclusively on the server.
 
 Students self-identify by WSU ID on the honor system — typical for
-ENGR 101 club events and sufficient for the sensitivity of the data involved.
+ENGR 101 club events. WSU email validation is applied to student signups, but
+email-domain validation does not independently verify identity.

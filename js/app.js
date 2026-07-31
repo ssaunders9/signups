@@ -300,6 +300,10 @@ var app = (function () {
       showSignupFeedback('Please enter a valid email address.', 'error');
       return;
     }
+    if (!/@wsu\.edu$/i.test(data.studentEmail)) {
+      showSignupFeedback('Please use your WSU email address (@wsu.edu).', 'error');
+      return;
+    }
     if (!data.studentWSUID || !/^\d{8,9}$/.test(data.studentWSUID)) {
       showSignupFeedback('Please enter a valid WSU ID (8–9 digits).', 'error');
       return;
@@ -353,7 +357,8 @@ var app = (function () {
       contact: dom.eventContact.value.trim(),
       maxAttendance: parseInt(dom.maxAttendance.value, 10),
       notes: dom.notes.value.trim(),
-      allowedMajors: collectMajors()
+      allowedMajors: collectMajors(),
+      restrictionMode: dom.restrictToggle.value
     };
 
     // Client-side validation (mirrors server validation)
@@ -367,6 +372,13 @@ var app = (function () {
     }
     if (!data.eventDate) {
       showClubFeedback('Please select a date.', 'error');
+      return;
+    }
+    var selectedDate = new Date(data.eventDate + 'T00:00:00');
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (isNaN(selectedDate.getTime()) || selectedDate < today) {
+      showClubFeedback('Please select today or a future event date.', 'error');
       return;
     }
     if (!data.eventStartTime) {
@@ -387,6 +399,11 @@ var app = (function () {
     }
     if (data.notes.length > 500) {
       showClubFeedback('Notes too long (max 500 chars).', 'error');
+      return;
+    }
+    if (dom.restrictToggle.value === 'restricted' && !data.allowedMajors) {
+      showClubFeedback('Select at least one allowed major, or choose "All are welcome".', 'error');
+      dom.majorSelector.style.display = 'block';
       return;
     }
 

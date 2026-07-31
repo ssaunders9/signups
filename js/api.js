@@ -42,7 +42,8 @@ var api = (function () {
       contact: data.contact || '',
       maxAttendance: data.maxAttendance,
       notes: data.notes || '',
-      allowedMajors: data.allowedMajors || ''
+      allowedMajors: data.allowedMajors || '',
+      restrictionMode: data.restrictionMode || 'all'
     });
   }
 
