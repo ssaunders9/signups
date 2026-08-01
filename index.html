@@ -60,7 +60,7 @@
       <!-- Student signup form (hidden until "Sign Up" is clicked) -->
       <div id="signup-panel" class="form-panel" style="display:none;">
         <h3>Sign Up: <span id="signup-event-name"></span></h3>
-        <form id="signup-form">
+        <form id="signup-form" novalidate>
           <input type="hidden" id="signup-event-id">
 
           <div class="form-group">
@@ -106,7 +106,6 @@
             <input type="text" id="event-name" maxlength="200" required
                    placeholder="e.g. Meet &amp; Greet with Industry Panel">
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label for="event-date">Date</label>
@@ -236,6 +235,7 @@
         Signed up: <strong id="attendance-count">—</strong>
         / <span id="attendance-max">—</span>
       </p>
+      <p class="modal-help">Enter the attendance PIN provided to club officers. If you do not know it, contact the course coordinator.</p>
 
       <div id="attendance-list">
         <!-- Dynamically populated -->
@@ -243,6 +243,7 @@
 
       <div class="modal-actions">
         <button id="close-attendance-modal" class="btn btn-secondary">Close</button>
+        <button id="clear-attendance-pin" class="btn btn-secondary">Clear PIN</button>
         <button id="print-attendance" class="btn btn-primary">&#128424; Print Attendance Sheet</button>
       </div>
     </div>

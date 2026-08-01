@@ -49,6 +49,7 @@ var app = (function () {
     dom.attendanceCount      = $('attendance-count');
     dom.attendanceMax        = $('attendance-max');
     dom.closeAttendanceModal = $('close-attendance-modal');
+    dom.clearAttendancePin   = $('clear-attendance-pin');
     dom.printAttendance      = $('print-attendance');
   }
 
@@ -74,6 +75,11 @@ var app = (function () {
       dom.majorSelector.style.display = (this.value === 'restricted') ? 'block' : 'none';
     });
     dom.closeAttendanceModal.addEventListener('click', closeAttendanceModal);
+    dom.clearAttendancePin.addEventListener('click', function () {
+      sessionStorage.removeItem('attendance_pin');
+      closeAttendanceModal();
+      alert('Attendance PIN cleared. You will be asked for it next time.');
+    });
     dom.printAttendance.addEventListener('click', printAttendance);
 
     // Close modal on backdrop click
@@ -239,7 +245,7 @@ var app = (function () {
           (full ? ' (Full)' : ' (' + spots + ' spots left)') +
         '</span>' +
       '</div>' +
-      '<p class="event-majors"><strong>Intended majors:</strong> ' +
+      '<p class="event-majors"><strong>Preferred majors:</strong> ' +
         (ev.allowedMajors ? escHtml(ev.allowedMajors) : 'All are welcome') + '</p>' +
       (ev.notes ? '<p class="event-notes"><strong>Notes:</strong> ' + escHtml(ev.notes) + '</p>' : '') +
       '<div class="event-actions">' +

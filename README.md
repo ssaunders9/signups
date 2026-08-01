@@ -78,7 +78,7 @@ Club_Calendar_101/
   see capacity counts.
 - **Club View**: Submit events with date, time, location, contact email,
   attendance cap, major restrictions, and notes.
-- **Major Information**: Clubs can identify intended majors via a dropdown
+- **Major Information**: Clubs can identify preferred majors via a dropdown
    and checkbox grid. This is informational only and does not block signups.
 - **Attendance Sheets**: PIN-gated printable sign-in sheets with student
   names, emails, WSU IDs, and signature lines.
