@@ -72,7 +72,6 @@
           <div class="form-group">
             <label for="signup-email">WSU Email</label>
             <input type="email" id="signup-email" maxlength="200" required
-                   pattern="^[^\s@]+@wsu\.edu$"
                    placeholder="jane.cougar@wsu.edu">
           </div>
 
@@ -176,20 +175,21 @@
           <div class="form-group">
             <label for="max-attendance">Maximum Attendance</label>
             <input type="number" id="max-attendance" min="1" max="10000"
-                   value="50" required>
+                   placeholder="e.g. 50" required>
           </div>
 
           <div class="form-group">
-            <label for="restrict-majors-toggle">Major Restriction</label>
+            <label for="restrict-majors-toggle">Major Information</label>
             <select id="restrict-majors-toggle">
               <option value="all">All are welcome</option>
-              <option value="restricted">Restricted to specific majors</option>
+              <option value="restricted">Intended for specific majors</option>
             </select>
           </div>
 
           <div id="major-selector" style="display:none;">
             <p style="font-size:0.85rem;color:#666;margin-bottom:8px;">
-              Select the majors allowed to attend:
+              Select the majors this event is intended for. This is informational;
+              students are not blocked from signing up based on major.
             </p>
             <div class="major-grid">
               <label><input type="checkbox" class="major-cb" value="Bioengineering"> Bioengineering</label>

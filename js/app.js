@@ -239,7 +239,7 @@ var app = (function () {
           (full ? ' (Full)' : ' (' + spots + ' spots left)') +
         '</span>' +
       '</div>' +
-      '<p class="event-majors"><strong>Majors:</strong> ' +
+      '<p class="event-majors"><strong>Intended majors:</strong> ' +
         (ev.allowedMajors ? escHtml(ev.allowedMajors) : 'All are welcome') + '</p>' +
       (ev.notes ? '<p class="event-notes"><strong>Notes:</strong> ' + escHtml(ev.notes) + '</p>' : '') +
       '<div class="event-actions">' +
@@ -402,7 +402,7 @@ var app = (function () {
       return;
     }
     if (dom.restrictToggle.value === 'restricted' && !data.allowedMajors) {
-      showClubFeedback('Select at least one allowed major, or choose "All are welcome".', 'error');
+      showClubFeedback('Select at least one intended major, or choose "All are welcome".', 'error');
       dom.majorSelector.style.display = 'block';
       return;
     }

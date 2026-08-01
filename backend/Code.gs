@@ -213,7 +213,6 @@ function submitEvent_(p) {
   if (isNaN(maxAtt)   || maxAtt < 1 || maxAtt > 10000) return error_('Invalid max attendance (1–10000)');
   if (notes.length > 500) return error_('Notes too long (max 500 chars)');
   if (allowedMajors.length > 500) return error_('Allowed majors too long');
-  if (p.restrictionMode === 'restricted' && !allowedMajors) return error_('Select at least one allowed major');
 
   var id = generateId_();
   var sheet = getSheet_(SHEET_EVENTS);

@@ -78,8 +78,8 @@ Club_Calendar_101/
   see capacity counts.
 - **Club View**: Submit events with date, time, location, contact email,
   attendance cap, major restrictions, and notes.
-- **Major Restrictions**: Events can be open to all or limited to specific
-  engineering majors via a dropdown and checkbox grid.
+- **Major Information**: Clubs can identify intended majors via a dropdown
+   and checkbox grid. This is informational only and does not block signups.
 - **Attendance Sheets**: PIN-gated printable sign-in sheets with student
   names, emails, WSU IDs, and signature lines.
 - **Past Events**: Automatically sorted behind a collapsible toggle.
