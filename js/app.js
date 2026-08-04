@@ -116,7 +116,7 @@ var app = (function () {
     dom.errorMsg.style.display = 'none';
     dom.eventList.innerHTML = '';
 
-    api.getEvents().then(function (data) {
+    getEventsWithRetry(2).then(function (data) {
       dom.loadingMsg.style.display = 'none';
 
       if (data.error) {
@@ -130,6 +130,15 @@ var app = (function () {
       dom.loadingMsg.style.display = 'none';
       showError('Could not load events. Check your connection and try again.');
       console.error(err);
+    });
+  }
+
+  function getEventsWithRetry(retriesLeft) {
+    return api.getEvents().catch(function (err) {
+      if (retriesLeft <= 0) throw err;
+      return new Promise(function (resolve) {
+        setTimeout(resolve, 500 * Math.pow(2, 2 - retriesLeft));
+      }).then(function () { return getEventsWithRetry(retriesLeft - 1); });
     });
   }
 

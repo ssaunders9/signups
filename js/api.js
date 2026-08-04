@@ -21,7 +21,10 @@ var api = (function () {
     var url = CONFIG.API_BASE_URL + '?' + params;
 
     return fetch(url, { method: 'GET', cache: 'no-cache' })
-      .then(function (r) { return r.json(); });
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      });
   }
 
   function _post(action, data) {
@@ -37,7 +40,10 @@ var api = (function () {
       method: 'POST',
       cache: 'no-cache',
       body: JSON.stringify(payload)
-    }).then(function (r) { return r.json(); });
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
   }
 
   // ── Public API ──────────────────────────────────────────────────────────

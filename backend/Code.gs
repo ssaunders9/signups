@@ -18,7 +18,10 @@ var API_KEY = 'cC7xKp9vR2mN4wL8jF3hQ6tY1bA5dG0e'; // shared secret — must matc
 var ATTENDANCE_PIN = '1010';            // PIN clubs use to view attendance sheets
 
 var RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
-var RATE_LIMIT_MAX          = 30;   // max requests per window
+var RATE_LIMIT_MAX = 100;          // submissions/signups per minute
+var ATTENDANCE_RATE_LIMIT_MAX = 30;
+var EVENT_CACHE_TTL_SECONDS = 30;
+var EVENT_CACHE_KEY = 'club_calendar_events_v1';
 
 var SHEET_EVENTS = 'Events';
 var SHEET_SIGNUPS = 'Signups';
@@ -72,17 +75,17 @@ function error_(msg) {
 
 // ── Rate Limiting ────────────────────────────────────────────────────────────
 
-function checkRateLimit_() {
+function checkRateLimit_(bucket, limit) {
   var cache = CacheService.getScriptCache();
   var ip = 'anonymous'; // Apps Script doesn't expose caller IP reliably
-  var key = 'rl_' + ip;
+  var key = 'rl_' + bucket + '_' + ip;
   var data = cache.get(key);
   var now = Date.now();
 
   if (data) {
     var record = JSON.parse(data);
     if (now - record.windowStart < RATE_LIMIT_WINDOW_MS) {
-      if (record.count >= RATE_LIMIT_MAX) {
+      if (record.count >= limit) {
         return false;
       }
       record.count += 1;
@@ -103,22 +106,24 @@ function doGet(e) {
   // throttle. Apps Script does not expose a reliable client IP here, so a
   // single shared cache key would otherwise make normal refreshes interfere
   // with every visitor.
-  if (e.parameter.action !== 'list-events' && !checkRateLimit_()) {
+  if (e.parameter.action !== 'list-events' &&
+      !checkRateLimit_('get', ATTENDANCE_RATE_LIMIT_MAX)) {
     return error_('Rate limit exceeded. Try again later.');
   }
   return handleAction_(e);
 }
 
 function doPost(e) {
-  if (!checkRateLimit_()) {
-    return error_('Rate limit exceeded. Try again later.');
-  }
-
   var body;
   try {
     body = JSON.parse(e.postData.contents || '{}');
   } catch (err) {
     return error_('Invalid JSON body');
+  }
+  var bucket = body.action === 'get-signups' ? 'attendance' : 'write';
+  var limit = bucket === 'attendance' ? ATTENDANCE_RATE_LIMIT_MAX : RATE_LIMIT_MAX;
+  if (!checkRateLimit_(bucket, limit)) {
+    return error_('Rate limit exceeded. Try again later.');
   }
   return handlePayload_(body);
 }
@@ -154,10 +159,18 @@ function handlePayload_(p) {
 // ── List Events ──────────────────────────────────────────────────────────────
 
 function listEvents_() {
+  var cache = CacheService.getScriptCache();
+  var cached = cache.get(EVENT_CACHE_KEY);
+  if (cached) {
+    return json_(JSON.parse(cached));
+  }
+
   var sheet = getSheet_(SHEET_EVENTS);
   var data = sheet.getDataRange().getValues();
   if (data.length < 2) {
-    return json_({ events: [], signups: {} });
+    var emptyResult = { events: [], signupCounts: {} };
+    cache.put(EVENT_CACHE_KEY, JSON.stringify(emptyResult), EVENT_CACHE_TTL_SECONDS);
+    return json_(emptyResult);
   }
 
   var headers = data[0];
@@ -191,7 +204,9 @@ function listEvents_() {
     }
   }
 
-  return json_({ events: events, signupCounts: signupCounts });
+  var result = { events: events, signupCounts: signupCounts };
+  cache.put(EVENT_CACHE_KEY, JSON.stringify(result), EVENT_CACHE_TTL_SECONDS);
+  return json_(result);
 }
 
 // ── Submit Event ─────────────────────────────────────────────────────────────
@@ -229,6 +244,7 @@ function submitEvent_(p) {
   sheet.appendRow([id, clubName, eventName, eventDate, eventStartTime,
                    eventEndTime, location, contact, maxAtt, notes,
                    allowedMajors, new Date().toISOString()]);
+  CacheService.getScriptCache().remove(EVENT_CACHE_KEY);
 
   return json_({ success: true, eventId: id });
 }
@@ -285,6 +301,7 @@ function signup_(p) {
   var id = generateId_();
   signupSheet.appendRow([id, eventId, studentName, studentEmail, studentWSUID,
                          new Date().toISOString()]);
+  CacheService.getScriptCache().remove(EVENT_CACHE_KEY);
 
   return json_({ success: true, signupId: id });
 }
