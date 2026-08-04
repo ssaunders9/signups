@@ -50,10 +50,13 @@ function generateId_() {
 }
 
 function sanitize_(val) {
-  // Strip dangerous characters; client-side escHtml handles display encoding.
-  // We only strip here to keep data clean — no HTML entity conversion.
+  // Remove markup on input; client-side escHtml handles display encoding.
+  // Remove script/style blocks first so their contents are not displayed.
   if (typeof val !== 'string') return val;
-  return val.replace(/[<>]/g, '');
+  return val
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]*>/g, '');
 }
 
 function json_(obj) {
@@ -164,6 +167,9 @@ function listEvents_() {
     var obj = {};
     for (var j = 0; j < headers.length; j++) {
       var val = row[j] !== undefined ? row[j] : '';
+      if (typeof val === 'string') {
+        val = sanitize_(val);
+      }
       // Google Sheets may convert time strings like "4:00 PM" to Date objects;
       // convert them back to readable time strings.
       if (val instanceof Date && (headers[j] === 'eventStartTime' || headers[j] === 'eventEndTime' || headers[j] === 'eventTime')) {
