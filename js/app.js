@@ -226,35 +226,41 @@ var app = (function () {
     var spots = max - count;
     var full  = spots <= 0;
 
+    var eventName = displayText(ev.eventName, 'Untitled event');
+    var clubName = displayText(ev.clubName, 'Unnamed club');
+    var location = displayText(ev.location, '');
+    var contact = displayText(ev.contact, '');
+    var notes = displayText(ev.notes, '');
+    var majors = displayText(ev.allowedMajors, 'All are welcome');
     var dateDisplay = formatDate(ev.eventDate);
-    var timeDisplay = escHtml(ev.eventStartTime || '') +
-                      (ev.eventEndTime ? ' – ' + escHtml(ev.eventEndTime) : '');
+    var timeDisplay = escHtml(displayText(ev.eventStartTime, '')) +
+              (ev.eventEndTime ? ' – ' + escHtml(displayText(ev.eventEndTime, '')) : '');
 
     card.innerHTML =
       '<div class="event-header">' +
-        '<h3>' + escHtml(ev.eventName) + '</h3>' +
-        '<span class="event-club">' + escHtml(ev.clubName) + '</span>' +
+        '<h3>' + escHtml(eventName) + '</h3>' +
+        '<span class="event-club">' + escHtml(clubName) + '</span>' +
       '</div>' +
       '<div class="event-meta">' +
         '<span class="event-date">&#128197; ' + dateDisplay + '</span>' +
         '<span class="event-time">&#128338; ' + timeDisplay + '</span>' +
-        (ev.location ? '<span class="event-location">&#128205; ' + escHtml(ev.location) + '</span>' : '') +
-        (ev.contact ? '<span class="event-contact">&#9993; <a href="mailto:' + escHtml(ev.contact) + '">' + escHtml(ev.contact) + '</a></span>' : '') +
+        (location ? '<span class="event-location">&#128205; ' + escHtml(location) + '</span>' : '') +
+        (contact ? '<span class="event-contact">&#9993; <a href="mailto:' + escHtml(contact) + '">' + escHtml(contact) + '</a></span>' : '') +
         '<span class="event-capacity ' + (full ? 'full' : '') + '">' +
           '&#128101; ' + count + ' / ' + max +
           (full ? ' (Full)' : ' (' + spots + ' spots left)') +
         '</span>' +
       '</div>' +
       '<p class="event-majors"><strong>Preferred majors:</strong> ' +
-        (ev.allowedMajors ? escHtml(ev.allowedMajors) : 'All are welcome') + '</p>' +
-      (ev.notes ? '<p class="event-notes"><strong>Notes:</strong> ' + escHtml(ev.notes) + '</p>' : '') +
+        escHtml(majors) + '</p>' +
+      (notes ? '<p class="event-notes"><strong>Notes:</strong> ' + escHtml(notes) + '</p>' : '') +
       '<div class="event-actions">' +
         (isPast || full
           ? (isPast ? '' : '<button class="btn btn-full" disabled>Event Full</button>')
           : '<button class="btn btn-primary btn-signup" data-event-id="' + escHtml(ev.id) +
-            '" data-event-name="' + escHtml(ev.eventName) + '">Sign Up</button>') +
+            '" data-event-name="' + escHtml(eventName) + '">Sign Up</button>') +
         '<button class="btn btn-secondary btn-attendance" data-event-id="' + escHtml(ev.id) +
-          '" data-event-name="' + escHtml(ev.eventName) + '">&#128196; Attendance</button>' +
+          '" data-event-name="' + escHtml(eventName) + '">&#128196; Attendance</button>' +
       '</div>';
 
     return card;
@@ -569,6 +575,17 @@ var app = (function () {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  function displayText(value, fallback) {
+    if (!value) return fallback || '';
+    var text = String(value);
+    // Hide legacy tag fragments or obvious injection payloads already stored
+    // before the backend sanitizer was strengthened.
+    if (/script|style|onerror|onload|<|>|\/b\b|\bb(?:old|bold|italic)\b|\bimg\s+src\s*=/i.test(text)) {
+      return '[content removed]';
+    }
+    return text;
   }
 
   function toComparableDate(val) {

@@ -149,6 +149,7 @@ body {
   font-size: 1.15rem;
   font-weight: 600;
   color: #1a1a1a;
+  overflow-wrap: anywhere;
 }
 
 .event-club {
@@ -167,6 +168,10 @@ body {
   font-size: 0.9rem;
   color: #555;
   margin-bottom: 8px;
+}
+
+.event-meta > span {
+  overflow-wrap: anywhere;
 }
 
 .event-capacity.full {
