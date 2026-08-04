@@ -1,8 +1,8 @@
-# Club Calendar 101
+# Club Calendar 101/102
 
-**ENGR 101 — Club Events & Signups**
+**ENGR 101 & ENGR 102 — Club Events & Signups**
 
-A static web app (GitHub Pages) for WSU clubs to post events and ENGR 101
+A static web app (GitHub Pages) for WSU clubs to post events and ENGR 101/102
 students to sign up. Attendance sheets are printable.
 
 ## How It Works
@@ -85,7 +85,7 @@ Club_Calendar_101/
 - **Past Events**: Automatically sorted behind a collapsible toggle.
 - **Capacity Tracking**: Cards show spots remaining; signup button disables
   when full. Duplicate email signups are prevented.
-- **Scope**: This application is intended for routine ENGR 101 event
+- **Scope**: This application is intended for routine ENGR 101/102 event
    coordination. It is not designed for confidential records or high-risk
    authentication. Student identity is self-reported and event data is stored
    in the connected Google Sheet.
@@ -126,5 +126,5 @@ and script sources. Rate limiting prevents abuse. Sensitive views are
 gated behind credentials validated exclusively on the server.
 
 Students self-identify by WSU ID on the honor system — typical for
-ENGR 101 club events. WSU email validation is applied to student signups, but
+ENGR 101/102 club events. WSU email validation is applied to student signups, but
 email-domain validation does not independently verify identity.
