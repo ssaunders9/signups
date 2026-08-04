@@ -116,6 +116,17 @@ var app = (function () {
     dom.errorMsg.style.display = 'none';
     dom.eventList.innerHTML = '';
 
+    // Show the most recent successful response immediately while Apps Script
+    // wakes up or completes the background refresh.
+    var cached = readCachedEvents();
+    if (cached) {
+      dom.loadingMsg.textContent = 'Refreshing events…';
+      eventsCache = cached.events || [];
+      renderEvents(eventsCache, cached.signupCounts || {});
+    } else {
+      dom.loadingMsg.textContent = 'Loading events…';
+    }
+
     getEventsWithRetry(2).then(function (data) {
       dom.loadingMsg.style.display = 'none';
 
@@ -125,12 +136,35 @@ var app = (function () {
       }
 
       eventsCache = data.events || [];
+      writeCachedEvents(data);
       renderEvents(eventsCache, data.signupCounts || {});
     }).catch(function (err) {
       dom.loadingMsg.style.display = 'none';
-      showError('Could not load events. Check your connection and try again.');
+      if (!cached) {
+        showError('Could not load events. Check your connection and try again.');
+      }
       console.error(err);
     });
+  }
+
+  function readCachedEvents() {
+    try {
+      var raw = localStorage.getItem('club_calendar_events_v1');
+      return raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function writeCachedEvents(data) {
+    try {
+      localStorage.setItem('club_calendar_events_v1', JSON.stringify({
+        events: data.events || [],
+        signupCounts: data.signupCounts || {}
+      }));
+    } catch (err) {
+      // Storage may be unavailable in private or restricted browser contexts.
+    }
   }
 
   function getEventsWithRetry(retriesLeft) {
@@ -151,6 +185,7 @@ var app = (function () {
     api.getEvents().then(function (data) {
       if (!data.error) {
         eventsCache = data.events || [];
+        writeCachedEvents(data);
         renderEvents(eventsCache, data.signupCounts || {});
       }
     }).catch(function () { /* silent */ });
