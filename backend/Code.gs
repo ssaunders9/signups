@@ -96,7 +96,11 @@ function checkRateLimit_() {
 // ── Entry Points ─────────────────────────────────────────────────────────────
 
 function doGet(e) {
-  if (!checkRateLimit_()) {
+  // Public event reads are intentionally not counted against the write/API
+  // throttle. Apps Script does not expose a reliable client IP here, so a
+  // single shared cache key would otherwise make normal refreshes interfere
+  // with every visitor.
+  if (e.parameter.action !== 'list-events' && !checkRateLimit_()) {
     return error_('Rate limit exceeded. Try again later.');
   }
   return handleAction_(e);
