@@ -26,7 +26,8 @@ create table if not exists public.signups (
   student_email text not null check (student_email ~* '^[^[:space:]@]+@wsu\.edu$'),
   student_wsuid text not null check (student_wsuid ~ '^[0-9]{8,9}$'),
   created_at timestamptz not null default now(),
-  constraint unique_signup_per_event unique (event_id, student_email)
+  constraint unique_signup_per_event_email unique (event_id, student_email),
+  constraint unique_signup_per_event_wsuid unique (event_id, student_wsuid)
 );
 
 create index if not exists events_date_idx on public.events(event_date);
@@ -65,13 +66,18 @@ start_minutes integer;
 end_minutes integer;
 begin
   if nullif(trim(p->>'clubName'), '') is null then raise exception 'Invalid club name'; end if;
+  if char_length(p->>'clubName') > 100 then raise exception 'Club name is too long (maximum 100 characters)'; end if;
   if nullif(trim(p->>'eventName'), '') is null then raise exception 'Invalid event name'; end if;
+  if char_length(p->>'eventName') > 200 then raise exception 'Event name is too long (maximum 200 characters)'; end if;
   if (p->>'eventDate')::date < current_date then raise exception 'Event date must be today or in the future'; end if;
   if nullif(trim(p->>'eventStartTime'), '') is null or nullif(trim(p->>'eventEndTime'), '') is null then raise exception 'Invalid event time'; end if;
   start_minutes := extract(hour from to_timestamp(trim(p->>'eventStartTime'), 'HH12:MI AM'))::integer * 60 + extract(minute from to_timestamp(trim(p->>'eventStartTime'), 'HH12:MI AM'))::integer;
   end_minutes := extract(hour from to_timestamp(trim(p->>'eventEndTime'), 'HH12:MI AM'))::integer * 60 + extract(minute from to_timestamp(trim(p->>'eventEndTime'), 'HH12:MI AM'))::integer;
   if end_minutes <= start_minutes then raise exception 'End time must be after the start time'; end if;
   if nullif(trim(p->>'location'), '') is null then raise exception 'Invalid location'; end if;
+  if char_length(p->>'location') > 200 then raise exception 'Location is too long (maximum 200 characters)'; end if;
+  if char_length(coalesce(p->>'notes', '')) > 500 then raise exception 'Notes are too long (maximum 500 characters)'; end if;
+  if char_length(coalesce(p->>'contact', '')) > 200 then raise exception 'Contact email is too long (maximum 200 characters)'; end if;
   if (p->>'maxAttendance')::integer not between 1 and 10000 then raise exception 'Invalid max attendance'; end if;
 
   insert into public.events (club_name, event_name, event_date, start_time, end_time, location, contact_email, max_attendance, notes, preferred_majors)
@@ -91,10 +97,13 @@ set search_path = public
 as $$
 declare new_id uuid; target_max integer; current_count integer;
 begin
+  if nullif(trim(p->>'studentName'), '') is null or char_length(trim(p->>'studentName')) > 150 then raise exception 'Please enter a valid student name'; end if;
+  if char_length(p->>'studentEmail') > 200 then raise exception 'Email address is too long'; end if;
   select max_attendance into target_max from public.events where id = (p->>'eventId')::uuid and status = 'active' for update;
   if target_max is null then raise exception 'Event not found'; end if;
   if (p->>'studentEmail' !~* '^[^[:space:]@]+@wsu\.edu$' or p->>'studentWSUID' !~ '^[0-9]{8,9}$') then raise exception 'Invalid student information'; end if;
   if exists (select 1 from public.signups where event_id = (p->>'eventId')::uuid and student_email = lower(trim(p->>'studentEmail'))) then raise exception 'You have already signed up for this event'; end if;
+  if exists (select 1 from public.signups where event_id = (p->>'eventId')::uuid and student_wsuid = trim(p->>'studentWSUID')) then raise exception 'This WSU ID is already signed up for this event'; end if;
   select count(*) into current_count from public.signups where event_id = (p->>'eventId')::uuid;
   if current_count >= target_max then raise exception 'Event is full'; end if;
   insert into public.signups (event_id, student_name, student_email, student_wsuid)

@@ -88,7 +88,19 @@ var supabaseApi = (function () {
   }
 
   function asAppError(error) {
-    return { error: error.message || 'Supabase request failed.' };
+    var message = error && error.message ? error.message : '';
+    if (/unique_signup_per_event_wsuid|already signed up.*WSU ID/i.test(message)) {
+      message = 'This WSU ID is already signed up for this event.';
+    } else if (/unique_signup_per_event_email|already signed up/i.test(message)) {
+      message = 'You have already signed up for this event.';
+    } else if (/student_name_check|student name/i.test(message)) {
+      message = 'Please enter a valid student name.';
+    } else if (/HH12|event time/i.test(message)) {
+      message = 'Please select valid start and end times.';
+    } else if (!message) {
+      message = 'Supabase request failed.';
+    }
+    return { error: message };
   }
 
   return {
