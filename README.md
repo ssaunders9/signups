@@ -8,47 +8,33 @@ students to sign up. Attendance sheets are printable.
 ## How It Works
 
 ```
-┌──────────────┐       ┌──────────────────┐       ┌──────────────┐
-│  GitHub Pages │  ←→   │ Google Apps Script │  ←→   │ Google Sheets │
-│  (HTML/JS)   │  GET   │  (backend/Code.gs) │  GET   │  (database)   │
-└──────────────┘       └──────────────────┘       └──────────────┘
+┌──────────────┐       ┌──────────────────────────┐
+│  GitHub Pages │  ←→   │ Supabase Postgres + RPCs │
+│  (HTML/JS)   │ HTTPS  │  (database/API layer)   │
+└──────────────┘       └──────────────────────────┘
 ```
 
 - **Frontend**: Static HTML/CSS/JS served from GitHub Pages.
-- **Backend**: Google Apps Script web app that reads/writes a Google Sheet.
-- **Database**: Two sheet tabs — `Events` and `Signups`.
+- **Backend/database**: Supabase Postgres with security-definer functions and
+   database constraints.
 
 ## Setup (one-time, ~10 minutes)
 
-### 1. Create the Google Sheet
+### 1. Configure Supabase
 
-1. Go to [sheets.google.com](https://sheets.google.com) and create a new blank
-   spreadsheet.
-2. You don't need to create any tabs — the script handles that on first run.
+1. Open the Supabase project dashboard.
+2. Select **SQL Editor → New query**.
+3. Paste and run [`supabase/schema.sql`](supabase/schema.sql).
+4. Confirm that `events` and `signups` appear in **Table Editor**.
+5. Do not put the database password or service-role key in frontend files.
 
-### 2. Deploy the Apps Script Backend
+### 2. Configure the Frontend
 
-1. In the spreadsheet, go to **Extensions → Apps Script**.
-2. Delete any placeholder code and paste in the entire contents of
-   [`backend/Code.gs`](backend/Code.gs).
-3. Set the `API_KEY` and `ATTENDANCE_PIN` near the top of the file to values
-   of your choosing.
-4. Click **Save**, then **Deploy → New Deployment**.
-5. Choose type: **Web app**.
-   - Execute as: **Me**
-   - Who has access: **Anyone**
-6. Click **Deploy**, authorize, then **copy the web app URL**.
+`js/config.js` contains the Supabase project URL and publishable key. The
+publishable key is intended for browser use; security comes from the SQL
+functions and policies in `supabase/schema.sql`.
 
-### 3. Configure the Frontend
-
-1. Encode your API URL and key as base64:
-   ```bash
-   echo -n 'YOUR_API_URL' | base64
-   echo -n 'YOUR_API_KEY'  | base64
-   ```
-2. Paste the encoded values into [`js/config.js`](js/config.js).
-
-### 4. Deploy to GitHub Pages
+### 3. Deploy to GitHub Pages
 
 1. Push this repo to GitHub.
 2. Go to **Settings → Pages** → deploy from `main` branch, root folder.
@@ -63,9 +49,12 @@ Club_Calendar_101/
 ├── css/
 │   └── style.css       All styling
 ├── js/
-│   ├── config.js       Configuration (base64-encoded)
-│   ├── api.js          Backend communication layer
+│   ├── config.js       Supabase URL + publishable key
+│   ├── supabase-api.js Supabase RPC integration
+│   ├── api.js          Legacy Apps Script API wrapper
 │   └── app.js          UI logic, event rendering, signups
+├── supabase/
+│   └── schema.sql      Tables, functions, grants, and RLS setup
 ├── backend/
 │   ├── Code.gs         Google Apps Script (deploy to Google)
 │   └── appsscript.json Apps Script manifest
@@ -110,20 +99,19 @@ Club_Calendar_101/
 
 - **Adding new columns**: Edit the header row in `Code.gs`'s `getSheet_()`,
   update `submitEvent_`, and update the frontend rendering in `app.js`.
-- **Changing the PIN or API key**: Update `Code.gs`, re-encode for
-  `config.js`, and redeploy.
-- **Rate limits**: Adjust `RATE_LIMIT_MAX` in `Code.gs` (default: 30/min).
-- **Rebuilding the config**: Run the `echo -n | base64` commands above
-  whenever the URL or key changes.
+- **Changing the attendance PIN**: Update the `get_attendance` function in
+   `supabase/schema.sql` and rerun the function definition in Supabase SQL
+   Editor. A future version should move this to authenticated club accounts.
+- **Database changes**: Update `supabase/schema.sql` and test in Supabase
+   before deploying frontend changes.
 
 ## Security
 
-The application employs multiple layers of protection appropriate for a
-static-site deployment. Backend endpoints validate all requests server-side
-before any data is read or written. Frontend secrets are stored in a format
-that deters casual inspection. A Content Security Policy restricts network
-and script sources. Rate limiting prevents abuse. Sensitive views are
-gated behind credentials validated exclusively on the server.
+The application uses Supabase database functions, constraints, and access
+policies as its active server-side boundary. The publishable frontend key is
+not a secret. A Content Security Policy restricts network and script sources,
+and the attendance function does not expose signup rows through direct table
+access.
 
 Students self-identify by WSU ID on the honor system — typical for
 ENGR 101/102 club events. WSU email validation is applied to student signups, but

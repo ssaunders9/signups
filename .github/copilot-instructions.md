@@ -3,8 +3,9 @@
 ## Project Scope
 
 This is an isolated repository for a small WSU ENGR 101/102 club-events application.
-The public frontend is hosted on GitHub Pages. The backend is a Google Apps
-Script web app connected to a Google Sheet.
+The public frontend is hosted on GitHub Pages. Supabase is the active database
+and API layer. The former Google Apps Script/Google Sheet integration is legacy
+reference only and should not be used for new changes.
 
 Repository: `https://github.com/ssaunders9/signups`
 
@@ -12,12 +13,14 @@ Repository: `https://github.com/ssaunders9/signups`
 
 - `index.html`: static page with Student View and Club View.
 - `css/style.css`: responsive styling and print styles.
-- `js/config.js`: encoded API URL and API key configuration.
+- `js/config.js`: Supabase URL and publishable-key configuration.
 - `js/api.js`: frontend API wrapper.
 - `js/app.js`: UI behavior, validation, event rendering, signup flow, ICS export,
   past-event filtering, and attendance display.
-- `backend/Code.gs`: Google Apps Script entry points, validation, rate limiting,
-  spreadsheet reads/writes, signup capacity checks, and attendance PIN checks.
+- `supabase/schema.sql`: active Supabase schema, functions, grants, and policies.
+- `js/supabase-api.js`: active Supabase API wrapper.
+- `backend/Code.gs`: legacy Google Apps Script reference; do not use for new
+  application behavior unless explicitly migrating legacy data.
 - `backend/appsscript.json`: Apps Script manifest.
 - `.nojekyll`: required so GitHub Pages serves the static site without Jekyll.
 
@@ -63,10 +66,17 @@ redesigned.
 - Contact email is optional and limited to 200 characters.
 - Maximum attendance must be between 1 and 10,000.
 - Notes and allowed-major lists are limited to 500 characters.
-- Restricted events require at least one selected major.
+- Preferred-major selections are informational and do not block signups.
 - Student email must use the `@wsu.edu` domain.
 - WSU IDs must contain 8–9 digits.
 - Duplicate student email signups for the same event are rejected.
+
+## Supabase setup
+
+Run `supabase/schema.sql` in the Supabase SQL Editor before testing the site.
+The script creates the tables, indexes, security-definer functions, grants,
+and row-level security configuration. Do not place a database password or
+service-role key in frontend files.
 
 ## Deployment
 
@@ -86,18 +96,10 @@ git push origin main
 Do not commit unrelated parent-workspace files. GitHub Pages deploys the root
 of `main`; retain `.nojekyll`.
 
-### Google Apps Script
+### Legacy Google Apps Script
 
-After changing `backend/Code.gs`:
-
-1. Copy the code into the Apps Script project bound to the production Sheet.
-2. Save it.
-3. Use **Deploy → Manage deployments**.
-4. Edit the existing web-app deployment and select **New version**.
-5. Deploy without changing the existing URL.
-
-Do not create a new deployment unless the frontend URL is intentionally being
-changed. Test the deployed endpoint after redeployment.
+`backend/Code.gs` is retained only as legacy reference. Supabase is the active
+backend; do not redeploy or extend the Apps Script integration for new work.
 
 ## Development and Verification
 
@@ -122,9 +124,8 @@ For static frontend changes, test through an HTTP server rather than opening
 python3 -m http.server 8080
 ```
 
-Do not run Apps Script code with Node; Apps Script globals such as
-`SpreadsheetApp`, `ContentService`, `CacheService`, and `Utilities` only exist
-in Google Apps Script.
+Do not run `backend/Code.gs` with Node; its Apps Script globals only exist in
+Google Apps Script and it is not part of the active application path.
 
 ## Editing Guidelines
 
