@@ -82,6 +82,7 @@ var supabaseApi = (function () {
       p_event_id: eventId,
       p_pin: pin
     }).then(unwrap).then(function (data) {
+      if (data.error) return data;
       return { signups: (data.signups || []).map(mapSignup) };
     }).catch(asAppError);
   }

@@ -29,8 +29,8 @@ create table if not exists public.signups (
   constraint unique_signup_per_event unique (event_id, student_email)
 );
 
-create index events_date_idx on public.events(event_date);
-create index signups_event_id_idx on public.signups(event_id);
+create index if not exists events_date_idx on public.events(event_date);
+create index if not exists signups_event_id_idx on public.signups(event_id);
 
 alter table public.events enable row level security;
 alter table public.signups enable row level security;
@@ -39,11 +39,6 @@ alter table public.signups enable row level security;
 -- table access. No public policy exposes attendance rows.
 revoke all on public.events from anon, authenticated;
 revoke all on public.signups from anon, authenticated;
-
-grant execute on function public.get_public_events() to anon, authenticated;
-grant execute on function public.submit_event(jsonb) to anon, authenticated;
-grant execute on function public.create_signup(jsonb) to anon, authenticated;
-grant execute on function public.get_attendance(uuid, text) to anon, authenticated;
 
 create or replace function public.get_public_events()
 returns jsonb
@@ -66,11 +61,16 @@ security definer
 set search_path = public
 as $$
 declare new_id uuid;
+start_minutes integer;
+end_minutes integer;
 begin
   if nullif(trim(p->>'clubName'), '') is null then raise exception 'Invalid club name'; end if;
   if nullif(trim(p->>'eventName'), '') is null then raise exception 'Invalid event name'; end if;
   if (p->>'eventDate')::date < current_date then raise exception 'Event date must be today or in the future'; end if;
   if nullif(trim(p->>'eventStartTime'), '') is null or nullif(trim(p->>'eventEndTime'), '') is null then raise exception 'Invalid event time'; end if;
+  start_minutes := extract(hour from to_timestamp(trim(p->>'eventStartTime'), 'HH12:MI AM'))::integer * 60 + extract(minute from to_timestamp(trim(p->>'eventStartTime'), 'HH12:MI AM'))::integer;
+  end_minutes := extract(hour from to_timestamp(trim(p->>'eventEndTime'), 'HH12:MI AM'))::integer * 60 + extract(minute from to_timestamp(trim(p->>'eventEndTime'), 'HH12:MI AM'))::integer;
+  if end_minutes <= start_minutes then raise exception 'End time must be after the start time'; end if;
   if nullif(trim(p->>'location'), '') is null then raise exception 'Invalid location'; end if;
   if (p->>'maxAttendance')::integer not between 1 and 10000 then raise exception 'Invalid max attendance'; end if;
 
@@ -111,3 +111,9 @@ set search_path = public
 as $$
   select case when p_pin = '1010' then jsonb_build_object('signups', coalesce((select jsonb_agg(to_jsonb(s) order by s.created_at) from public.signups s where s.event_id = p_event_id), '[]'::jsonb)) else jsonb_build_object('error', 'Incorrect PIN') end;
 $$;
+
+-- Grant execution only after all functions have been created.
+grant execute on function public.get_public_events() to anon, authenticated;
+grant execute on function public.submit_event(jsonb) to anon, authenticated;
+grant execute on function public.create_signup(jsonb) to anon, authenticated;
+grant execute on function public.get_attendance(uuid, text) to anon, authenticated;

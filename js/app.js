@@ -445,6 +445,10 @@ var app = (function () {
       showClubFeedback('Please select an end time.', 'error');
       return;
     }
+    if (timeToMinutes(data.eventEndTime) <= timeToMinutes(data.eventStartTime)) {
+      showClubFeedback('End time must be after the start time.', 'error');
+      return;
+    }
     if (!data.location || data.location.length > 200) {
       showClubFeedback('Please enter a location (max 200 chars).', 'error');
       return;
@@ -497,7 +501,7 @@ var app = (function () {
     var cbs = document.querySelectorAll('.major-cb:checked');
     var majors = [];
     cbs.forEach(function (cb) { majors.push(cb.value); });
-    return majors.join(',');
+    return majors.join(', ');
   }
 
   // ── Attendance modal ────────────────────────────────────────────────────
@@ -623,13 +627,19 @@ var app = (function () {
 
   function displayText(value, fallback) {
     if (!value) return fallback || '';
-    var text = String(value);
-    // Hide legacy tag fragments or obvious injection payloads already stored
-    // before the backend sanitizer was strengthened.
-    if (/script|style|onerror|onload|<|>|\/b\b|\bb(?:old|bold|italic)\b|\bimg\s+src\s*=/i.test(text)) {
-      return '[content removed]';
-    }
-    return text;
+    // User content is escaped at the HTML insertion point by escHtml().
+    // Do not blacklist ordinary words such as "bold" or "style" here.
+    return String(value);
+  }
+
+  function timeToMinutes(value) {
+    var match = String(value || '').match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+    if (!match) return -1;
+    var hour = parseInt(match[1], 10);
+    var minute = parseInt(match[2], 10);
+    if (/PM/i.test(match[3]) && hour < 12) hour += 12;
+    if (/AM/i.test(match[3]) && hour === 12) hour = 0;
+    return hour * 60 + minute;
   }
 
   function toComparableDate(val) {
