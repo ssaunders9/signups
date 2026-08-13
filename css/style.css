@@ -17,6 +17,7 @@ body {
   color: #1a1a1a;
   background: #f4f5f7;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
@@ -114,6 +115,8 @@ body {
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   border-left: 4px solid #981e32;
   transition: box-shadow 0.2s;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .event-card:hover {
@@ -143,6 +146,7 @@ body {
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 10px;
+  min-width: 0;
 }
 
 .event-header h3 {
@@ -150,6 +154,8 @@ body {
   font-weight: 600;
   color: #1a1a1a;
   overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .event-club {
@@ -159,6 +165,9 @@ body {
   padding: 3px 10px;
   border-radius: 20px;
   font-weight: 500;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .event-meta {
@@ -168,10 +177,14 @@ body {
   font-size: 0.9rem;
   color: #555;
   margin-bottom: 8px;
+  min-width: 0;
 }
 
 .event-meta > span {
   overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .event-capacity.full {
@@ -187,6 +200,9 @@ body {
   background: #f9f9f9;
   border-radius: 6px;
   border-left: 3px solid #ddd;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .event-majors {
@@ -197,12 +213,16 @@ body {
   background: #fef9f0;
   border-radius: 6px;
   border-left: 3px solid #e6a817;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .event-actions {
   display: flex;
   gap: 10px;
   margin-top: 14px;
+  flex-wrap: wrap;
 }
 
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
