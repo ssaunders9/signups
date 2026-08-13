@@ -154,7 +154,8 @@ body {
   font-weight: 600;
   color: #1a1a1a;
   overflow-wrap: anywhere;
-  word-break: break-word;
+  word-break: break-all;
+  max-width: 100%;
   min-width: 0;
 }
 
@@ -166,7 +167,8 @@ body {
   border-radius: 20px;
   font-weight: 500;
   overflow-wrap: anywhere;
-  word-break: break-word;
+  word-break: break-all;
+  max-width: 100%;
   min-width: 0;
 }
 
@@ -182,7 +184,7 @@ body {
 
 .event-meta > span {
   overflow-wrap: anywhere;
-  word-break: break-word;
+  word-break: break-all;
   min-width: 0;
   max-width: 100%;
 }
@@ -201,8 +203,11 @@ body {
   border-radius: 6px;
   border-left: 3px solid #ddd;
   overflow-wrap: anywhere;
-  word-break: break-word;
+  word-break: break-all;
   max-width: 100%;
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
 }
 
 .event-majors {
@@ -214,8 +219,11 @@ body {
   border-radius: 6px;
   border-left: 3px solid #e6a817;
   overflow-wrap: anywhere;
-  word-break: break-word;
+  word-break: break-all;
   max-width: 100%;
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
 }
 
 .event-actions {
