@@ -32,8 +32,8 @@ frontend file.
 7. Test a duplicate signup and a full event.
 8. Open Attendance and test PIN `1010`.
 
-## Legacy backend
+## Legacy data
 
-`backend/Code.gs` is retained for reference only. It is not used by the active
-frontend. Do not delete it until the Supabase migration has been fully verified
-and any old Sheet data that needs to be retained has been exported.
+The former Google Sheet and Apps Script backend are no longer part of this
+repository. Export any historical Sheet data before deleting that external
+resource if it is still needed for records.

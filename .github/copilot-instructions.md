@@ -4,8 +4,8 @@
 
 This is an isolated repository for a small WSU ENGR 101/102 club-events application.
 The public frontend is hosted on GitHub Pages. Supabase is the active database
-and API layer. The former Google Apps Script/Google Sheet integration is legacy
-reference only and should not be used for new changes.
+and API layer. The former Google Apps Script/Google Sheet integration has been
+removed and should not be restored.
 
 Repository: `https://github.com/ssaunders9/signups`
 
@@ -14,34 +14,30 @@ Repository: `https://github.com/ssaunders9/signups`
 - `index.html`: static page with Student View and Club View.
 - `css/style.css`: responsive styling and print styles.
 - `js/config.js`: Supabase URL and publishable-key configuration.
-- `js/api.js`: frontend API wrapper.
 - `js/app.js`: UI behavior, validation, event rendering, signup flow, ICS export,
   past-event filtering, and attendance display.
 - `supabase/schema.sql`: active Supabase schema, functions, grants, and policies.
 - `js/supabase-api.js`: active Supabase API wrapper.
-- `backend/Code.gs`: legacy Google Apps Script reference; do not use for new
-  application behavior unless explicitly migrating legacy data.
-- `backend/appsscript.json`: Apps Script manifest.
 - `.nojekyll`: required so GitHub Pages serves the static site without Jekyll.
 
 ## Data Schema
 
-The `Events` sheet uses this column order:
+The `events` table uses these columns:
 
 ```text
 id, clubName, eventName, eventDate, eventStartTime, eventEndTime,
 location, contact, maxAttendance, notes, allowedMajors, createdAt
 ```
 
-The `Signups` sheet uses:
+The `signups` table uses:
 
 ```text
 id, eventId, studentName, studentEmail, studentWSUID, createdAt
 ```
 
-If the schema changes, update the Apps Script header row, append order, reads,
-and frontend rendering together. Do not delete or reorder existing production
-data without checking the live sheet first.
+If the schema changes, update `supabase/schema.sql`, the RPC functions, and the
+frontend mapping together. Do not change production tables without checking
+existing Supabase data first.
 
 ## Security and Privacy
 
@@ -51,12 +47,9 @@ needed by the frontend. Do not add sensitive student data beyond what is needed
 for event attendance. Keep server-side validation even when matching client
 validation exists.
 
-Current protections include input sanitization, Content Security Policy, API-key
-checking, rate limiting, WSU email validation, event-date validation, capacity
-checks, duplicate-signup checks, major-restriction validation, and a server-side
-attendance PIN. The Apps Script endpoint currently uses GET query parameters;
-avoid adding more personal data to URLs unless the transport is deliberately
-redesigned.
+Current protections include input sanitization, Content Security Policy,
+Supabase function validation, WSU email validation, event-date validation,
+capacity checks, duplicate-signup checks, and a server-side attendance PIN.
 
 ## Validation Rules
 
@@ -96,18 +89,13 @@ git push origin main
 Do not commit unrelated parent-workspace files. GitHub Pages deploys the root
 of `main`; retain `.nojekyll`.
 
-### Legacy Google Apps Script
-
-`backend/Code.gs` is retained only as legacy reference. Supabase is the active
-backend; do not redeploy or extend the Apps Script integration for new work.
-
 ## Development and Verification
 
 For JavaScript changes, run:
 
 ```text
 node --check js/app.js
-node --check js/api.js
+node --check js/supabase-api.js
 ```
 
 Also run:
@@ -124,8 +112,8 @@ For static frontend changes, test through an HTTP server rather than opening
 python3 -m http.server 8080
 ```
 
-Do not run `backend/Code.gs` with Node; its Apps Script globals only exist in
-Google Apps Script and it is not part of the active application path.
+The Supabase SQL is run in the Supabase SQL Editor; it is not JavaScript and
+should not be passed to Node.
 
 ## Editing Guidelines
 

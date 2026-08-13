@@ -55,9 +55,8 @@ Club_Calendar_101/
 │   └── app.js          UI logic, event rendering, signups
 ├── supabase/
 │   └── schema.sql      Tables, functions, grants, and RLS setup
-├── backend/
-│   ├── Code.gs         Google Apps Script (deploy to Google)
-│   └── appsscript.json Apps Script manifest
+├── supabase/
+│   └── schema.sql      Tables, functions, grants, and RLS setup
 └── README.md           This file
 ```
 
@@ -66,7 +65,7 @@ Club_Calendar_101/
 - **Student View**: Browse upcoming events, sign up with name/email/WSU ID,
   see capacity counts.
 - **Club View**: Submit events with date, time, location, contact email,
-  attendance cap, major restrictions, and notes.
+   attendance cap, preferred-major information, and notes.
 - **Major Information**: Clubs can identify preferred majors via a dropdown
    and checkbox grid. This is informational only and does not block signups.
 - **Attendance Sheets**: PIN-gated printable sign-in sheets with student
@@ -77,7 +76,7 @@ Club_Calendar_101/
 - **Scope**: This application is intended for routine ENGR 101/102 event
    coordination. It is not designed for confidential records or high-risk
    authentication. Student identity is self-reported and event data is stored
-   in the connected Google Sheet.
+   in the connected Supabase project.
 
 ## Usage
 
